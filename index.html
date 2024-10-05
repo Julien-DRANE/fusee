@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Rocket Game</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: radial-gradient(circle, #1e1f26, #15151a);
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background: #000;
+        }
+        #startButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <audio id="backgroundMusic" loop>
+        <source src="soft-music.mp3" type="audio/mpeg">
+    </audio>
+    <button id="startButton">Start Game</button>
+    <canvas id="gameCanvas" style="display: none;"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>

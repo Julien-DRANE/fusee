@@ -1,0 +1,258 @@
+// Sélectionne le canvas et initialise le contexte
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Dimensions du canvas
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Variables globales
+let rocket = {
+    x: canvas.width / 2 - 25,
+    y: canvas.height - 100,
+    width: 50,
+    height: 100,
+    dx: 0,
+    dy: 0,
+    acceleration: 1.5,  // Accélération initiale
+    maxSpeed: 15,       // Limite de la vitesse maximale
+    friction: 0.93      // Réduction de la friction pour maintenir de l'inertie
+};
+let obstacles = [];
+let stars = [];
+let planet = null;  // Variable pour la planète
+const numberOfStars = 100;
+const backgroundMusic = document.getElementById("backgroundMusic");
+let difficultyLevel = 1;  // Niveau de difficulté initial
+let obstacleSpeedMultiplier = 1;  // Multiplicateur de vitesse des obstacles
+
+// Charger l'image de la fusée
+const rocketImage = new Image();
+rocketImage.src = "rocket.png";
+
+// Charger les images des obstacles
+const obstacleImages = ["unicorn.png", "koala.png", "crocodile.png"].map(src => {
+    const img = new Image();
+    img.src = src;
+    return img;
+});
+
+// Charger l'image de la planète
+const planetImage = new Image();
+planetImage.src = "planet.png";
+
+// Gérer le chargement des images
+let imagesLoaded = 0;
+const totalImages = obstacleImages.length + 2; // Inclure l'image de la fusée et la planète
+
+// Vérifier le chargement des images et démarrer le jeu
+function imageLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+        document.getElementById("startButton").style.display = "block";
+    }
+}
+
+// Ajouter des gestionnaires d'événements de chargement et d'erreur pour chaque image
+rocketImage.onload = imageLoaded;
+planetImage.onload = imageLoaded;
+rocketImage.onerror = planetImage.onerror = function () {
+    console.error("Erreur de chargement de l'image.");
+    alert("Erreur de chargement de l'image.");
+};
+
+obstacleImages.forEach(img => {
+    img.onload = imageLoaded;
+    img.onerror = function () {
+        console.error(`Erreur de chargement de l'image : ${img.src}`);
+        alert(`Erreur de chargement de l'image : ${img.src}`);
+    };
+});
+
+// Générer des étoiles aléatoires
+function generateStars() {
+    for (let i = 0; i < numberOfStars; i++) {
+        const size = Math.random() * 3 + 1; // Taille de l'étoile
+        const speed = size / 2; // Vitesse proportionnelle à la taille
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        stars.push({ x, y, size, speed });
+    }
+}
+
+// Générer la planète (décor)
+function generatePlanet() {
+    const x = Math.random() * (canvas.width - 100);  // Position horizontale aléatoire
+    planet = {
+        x: x,
+        y: -200,  // Position de départ hors de l'écran
+        width: 400,
+        height: 400,
+        speed: 0.5 // Vitesse lente pour traverser l'écran
+    };
+}
+
+// Mettre à jour les positions des étoiles
+function updateStars() {
+    stars.forEach(star => {
+        star.y += star.speed; // Faire descendre les étoiles
+        if (star.y > canvas.height) {
+            star.y = 0; // Réinitialiser la position pour créer un effet de boucle
+            star.x = Math.random() * canvas.width;
+        }
+    });
+}
+
+// Mettre à jour la position de la planète
+function updatePlanet() {
+    if (planet) {
+        planet.y += planet.speed;  // Faire descendre la planète
+        if (planet.y > canvas.height) {
+            planet = null;  // Supprimer la planète lorsqu'elle sort de l'écran
+        }
+    } else {
+        // Générer la planète avec une probabilité de 1 sur 500 à chaque frame
+        if (Math.random() < 0.002) {
+            generatePlanet();
+        }
+    }
+}
+
+// Dessiner les étoiles avec des vitesses et tailles différentes
+function drawStars() {
+    stars.forEach(star => {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+    });
+}
+
+// Dessiner la planète
+function drawPlanet() {
+    if (planet) {
+        ctx.drawImage(planetImage, planet.x, planet.y, planet.width, planet.height);
+    }
+}
+
+// Fonction pour générer des obstacles
+function generateObstacle() {
+    const size = Math.random() * 50 + 30;
+    const x = Math.random() * (canvas.width - size);
+    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier;  // Appliquer le multiplicateur de vitesse
+    const imageIndex = Math.floor(Math.random() * obstacleImages.length);
+    obstacles.push({ x, y: -size, size, speed, image: obstacleImages[imageIndex] });
+}
+
+// Déplacer la fusée avec inertie
+function moveRocket() {
+    rocket.x += rocket.dx;
+    rocket.y += rocket.dy;
+
+    // Appliquer la friction pour ralentir progressivement la fusée
+    rocket.dx *= rocket.friction;
+    rocket.dy *= rocket.friction;
+
+    // Limiter la vitesse maximale de la fusée
+    if (rocket.dx > rocket.maxSpeed) rocket.dx = rocket.maxSpeed;
+    if (rocket.dx < -rocket.maxSpeed) rocket.dx = -rocket.maxSpeed;
+    if (rocket.dy > rocket.maxSpeed) rocket.dy = rocket.maxSpeed;
+    if (rocket.dy < -rocket.maxSpeed) rocket.dy = -rocket.maxSpeed;
+
+    // Empêcher la fusée de sortir du canvas horizontalement
+    if (rocket.x < 0) rocket.x = 0;
+    if (rocket.x + rocket.width > canvas.width) rocket.x = canvas.width - rocket.width;
+
+    // Empêcher la fusée de sortir du canvas verticalement
+    if (rocket.y < 0) rocket.y = 0;
+    if (rocket.y + rocket.height > canvas.height) rocket.y = canvas.height - rocket.height;
+}
+
+// Gérer les collisions
+function detectCollision(rocket, obstacle) {
+    return !(
+        rocket.y > obstacle.y + obstacle.size ||
+        rocket.y + rocket.height < obstacle.y ||
+        rocket.x > obstacle.x + obstacle.size ||
+        rocket.x + rocket.width < obstacle.x
+    );
+}
+
+// Mettre à jour les obstacles
+function updateObstacles() {
+    obstacles.forEach((obstacle, index) => {
+        obstacle.y += obstacle.speed;  // Appliquer la vitesse augmentée
+        if (obstacle.y > canvas.height) obstacles.splice(index, 1);
+        if (detectCollision(rocket, obstacle)) {
+            alert("Collision ! Game Over");
+            document.location.reload();
+        }
+    });
+}
+
+// Dessiner la fusée
+function drawRocket() {
+    ctx.drawImage(rocketImage, rocket.x, rocket.y, rocket.width, rocket.height);
+}
+
+// Dessiner les obstacles
+function drawObstacles() {
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+    });
+}
+
+// Mettre à jour le canvas
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawStars();      // Dessiner les étoiles en arrière-plan
+    moveRocket();     // Appliquer les mouvements avec inertie
+    updateStars();    // Mettre à jour la position des étoiles
+    updatePlanet();   // Mettre à jour la position de la planète
+    drawPlanet();     // Dessiner la planète décorative
+    updateObstacles();
+    drawRocket();
+    drawObstacles();
+
+    requestAnimationFrame(update);
+}
+
+// Augmenter la difficulté progressivement
+function increaseDifficulty() {
+    difficultyLevel += 1;  // Augmenter le niveau de difficulté
+    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
+
+    // Ajouter plus d'obstacles
+    for (let i = 0; i < difficultyLevel; i++) {
+        generateObstacle();
+    }
+}
+
+// Contrôles de la fusée
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") rocket.dx -= rocket.acceleration;  // Déplacer à gauche avec une accélération rapide
+    if (e.key === "ArrowRight") rocket.dx += rocket.acceleration; // Déplacer à droite avec une accélération rapide
+    if (e.key === "ArrowUp") rocket.dy -= rocket.acceleration;    // Déplacer vers le haut
+    if (e.key === "ArrowDown") rocket.dy += rocket.acceleration;  // Déplacer vers le bas
+});
+
+document.addEventListener("keyup", e => {
+    // Inertie appliquée, donc pas besoin de remettre dx et dy à 0
+});
+
+// Démarrer le jeu après clic sur le bouton
+document.getElementById("startButton").addEventListener("click", () => {
+    document.getElementById("startButton").style.display = "none";
+    canvas.style.display = "block";
+    backgroundMusic.play();
+    generateStars();    // Générer les étoiles avant de commencer
+    update();
+
+    // Augmenter la difficulté toutes les 10 secondes
+    setInterval(increaseDifficulty, 10000);
+});
+
+// Générer des obstacles à intervalles réguliers
+setInterval(generateObstacle, 800);
