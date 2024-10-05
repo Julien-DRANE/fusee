@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Colorful Rocket Game</title>
     <style>
-        /* Vos styles existants */
+        /* Styles globaux */
         body, html {
             margin: 0;
             padding: 0;
@@ -12,10 +12,17 @@
             background: radial-gradient(circle, #1e1f26, #15151a);
             font-family: Arial, sans-serif;
         }
+        /* Style du canvas */
         canvas {
             display: none; /* Cacher le canvas jusqu'au démarrage */
             background: #000;
+            width: 100vw; /* Prendre toute la largeur de la fenêtre */
+            height: 100vh; /* Prendre toute la hauteur de la fenêtre */
+            position: absolute; /* Superposer le canvas correctement */
+            top: 0;
+            left: 0;
         }
+        /* Bouton de démarrage */
         #startButton {
             position: absolute;
             top: 50%;
@@ -44,11 +51,14 @@
             text-align: center;
             color: white;
             border-radius: 10px;
+            width: 80%; /* Pour une meilleure adaptation sur mobile */
+            max-width: 400px;
         }
         #gameOverScreen input {
             margin-top: 10px;
             padding: 5px;
             font-size: 16px;
+            width: 80%;
         }
         #gameOverScreen button {
             margin-top: 10px;
@@ -66,6 +76,7 @@
             padding: 15px;
             border-radius: 10px;
             color: #000;
+            max-width: 200px;
         }
         #highScoreTable h2 {
             margin-top: 0;
@@ -94,7 +105,7 @@
         <div id="scoreDisplay"></div>
         <input type="text" id="playerNameInput" placeholder="Entrez votre nom">
         <button id="submitScoreButton">Enregistrer le Score</button>
-        <button id="restartButton">Rejouer</button>
+        <button id="restartButton" style="display: none;">Rejouer</button>
     </div>
 
     <!-- Tableau des Meilleurs Scores -->
