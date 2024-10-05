@@ -69,6 +69,9 @@ heartImage.src = "coeur.png";
 // Charger le son de collision
 const collisionSound = new Audio('collision.mp3'); // Assure-toi que collision.mp3 est dans le même répertoire
 
+// Charger le son de vie supplémentaire
+const extraLifeSound = new Audio('extra.mp3'); // Assure-toi que extra.mp3 est dans le même répertoire
+
 // Gérer le chargement des images
 let imagesLoaded = 0;
 const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, la planète, la lune et les cœurs
@@ -320,6 +323,8 @@ function updateBonusHeart() {
         // Détection de collision avec la fusée
         if (detectCollision(rocket, bonusHeart)) {
             lives = Math.min(lives + 1, 3); // Augmenter les vies jusqu'à un maximum de 3
+            extraLifeSound.currentTime = 0; // Remettre le son à zéro
+            extraLifeSound.play(); // Jouer le son de vie supplémentaire
             bonusHeart = null; // Retirer le cœur bonus après collecte
         }
     }
