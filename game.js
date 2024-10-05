@@ -15,17 +15,17 @@ let rocket = {
     dx: 0,
     dy: 0,
     acceleration: 1.5,  // Accélération initiale
-    maxSpeed: 15,       // Limite de la vitesse maximale
-    friction: 0.93      // Réduction de la friction pour maintenir de l'inertie
+    maxSpeed: 15,        // Limite de la vitesse maximale
+    friction: 0.93       // Réduction de la friction pour maintenir de l'inertie
 };
 let obstacles = [];
 let stars = [];
-let planet = null;  // Variable pour la planète
-let moon = null;    // Variable pour la lune
+let planet = null;       // Variable pour la planète
+let moon = null;         // Variable pour la lune
 const numberOfStars = 100;
 const backgroundMusic = document.getElementById("backgroundMusic");
-let difficultyLevel = 1;  // Niveau de difficulté initial
-let obstacleSpeedMultiplier = 1;  // Multiplicateur de vitesse des obstacles
+let difficultyLevel = 1; // Niveau de difficulté initial
+let obstacleSpeedMultiplier = 1; // Multiplicateur de vitesse des obstacles
 
 // Charger l'image de la fusée
 const rocketImage = new Image();
@@ -77,9 +77,10 @@ obstacleImages.forEach(img => {
 
 // Générer des étoiles aléatoires
 function generateStars() {
+    stars = []; // Réinitialiser les étoiles
     for (let i = 0; i < numberOfStars; i++) {
         const size = Math.random() * 3 + 1; // Taille de l'étoile
-        const speed = size / 2; // Vitesse proportionnelle à la taille
+        const speed = size / 2;             // Vitesse proportionnelle à la taille
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         stars.push({ x, y, size, speed });
@@ -91,10 +92,10 @@ function generatePlanet() {
     const x = Math.random() * (canvas.width - 400);  // Position horizontale aléatoire
     planet = {
         x: x,
-        y: -800,  // Position de départ hors de l'écran
-        width: 400,  // Largeur de la planète multipliée par 4
-        height: 400,  // Hauteur de la planète multipliée par 4
-        speed: 0.5 // Vitesse lente pour traverser l'écran
+        y: -800,          // Position de départ hors de l'écran
+        width: 400,       // Largeur de la planète multipliée par 4
+        height: 400,      // Hauteur de la planète multipliée par 4
+        speed: 0.5        // Vitesse lente pour traverser l'écran
     };
 }
 
@@ -103,10 +104,10 @@ function generateMoon() {
     const x = Math.random() * (canvas.width - 800);  // Position horizontale aléatoire
     moon = {
         x: x,
-        y: -1600,  // Position de départ hors de l'écran
-        width: 800,  // Largeur de la lune (super grosse)
-        height: 800,  // Hauteur de la lune (super grosse)
-        speed: 0.2 // Vitesse très lente pour traverser l'écran
+        y: -1600,         // Position de départ hors de l'écran
+        width: 800,       // Largeur de la lune (super grosse)
+        height: 800,      // Hauteur de la lune (super grosse)
+        speed: 0.2        // Vitesse très lente pour traverser l'écran
     };
 }
 
@@ -124,9 +125,9 @@ function updateStars() {
 // Mettre à jour la position de la planète
 function updatePlanet() {
     if (planet) {
-        planet.y += planet.speed;  // Faire descendre la planète
+        planet.y += planet.speed; // Faire descendre la planète
         if (planet.y > canvas.height) {
-            planet = null;  // Supprimer la planète lorsqu'elle sort de l'écran
+            planet = null; // Supprimer la planète lorsqu'elle sort de l'écran
         }
     } else {
         // Générer la planète avec une probabilité de 1 sur 500 à chaque frame
@@ -139,9 +140,9 @@ function updatePlanet() {
 // Mettre à jour la position de la lune
 function updateMoon() {
     if (moon) {
-        moon.y += moon.speed;  // Faire descendre la lune
+        moon.y += moon.speed; // Faire descendre la lune
         if (moon.y > canvas.height) {
-            moon = null;  // Supprimer la lune lorsqu'elle sort de l'écran
+            moon = null; // Supprimer la lune lorsqu'elle sort de l'écran
         }
     } else {
         // Générer la lune avec une probabilité de 1 sur 1000 à chaque frame
@@ -180,7 +181,7 @@ function drawMoon() {
 function generateObstacle() {
     const size = Math.random() * 50 + 30;
     const x = Math.random() * (canvas.width - size);
-    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier;  // Appliquer le multiplicateur de vitesse
+    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier; // Appliquer le multiplicateur de vitesse
     const imageIndex = Math.floor(Math.random() * obstacleImages.length);
     obstacles.push({ x, y: -size, size, speed, image: obstacleImages[imageIndex] });
 }
@@ -222,7 +223,7 @@ function detectCollision(rocket, obstacle) {
 // Mettre à jour les obstacles
 function updateObstacles() {
     obstacles.forEach((obstacle, index) => {
-        obstacle.y += obstacle.speed;  // Appliquer la vitesse augmentée
+        obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
         if (obstacle.y > canvas.height) obstacles.splice(index, 1);
         if (detectCollision(rocket, obstacle)) {
             alert("Collision ! Game Over");
@@ -243,46 +244,96 @@ function drawObstacles() {
     });
 }
 
-// Mettre à jour le canvas
-function update() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Gestion des touches pressées
+const keysPressed = {};
 
-    drawStars();      // Dessiner les étoiles en arrière-plan
-    moveRocket();     // Appliquer les mouvements avec inertie
-    updateStars();    // Mettre à jour la position des étoiles
-    updatePlanet();   // Mettre à jour la position de la planète
-    drawPlanet();     // Dessiner la planète décorative
-    updateMoon();     // Mettre à jour la position de la lune
-    drawMoon();       // Dessiner la lune décorative
-    updateObstacles();
-    drawRocket();
-    drawObstacles();
-
-    requestAnimationFrame(update);
-}
-
-// Augmenter la difficulté progressivement
-function increaseDifficulty() {
-    difficultyLevel += 1;  // Augmenter le niveau de difficulté
-    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
-
-    // Ajouter plus d'obstacles
-    for (let i = 0; i < difficultyLevel; i++) {
-        generateObstacle();
-    }
-}
-
-// Contrôles de la fusée
+// Contrôles de la fusée via clavier
 document.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft") rocket.dx -= rocket.acceleration;  // Déplacer à gauche avec une accélération rapide
-    if (e.key === "ArrowRight") rocket.dx += rocket.acceleration; // Déplacer à droite avec une accélération rapide
-    if (e.key === "ArrowUp") rocket.dy -= rocket.acceleration;    // Déplacer vers le haut
-    if (e.key === "ArrowDown") rocket.dy += rocket.acceleration;  // Déplacer vers le bas
+    keysPressed[e.key] = true;
 });
 
 document.addEventListener("keyup", e => {
-    // Inertie appliquée, donc pas besoin de remettre dx et dy à 0
+    keysPressed[e.key] = false;
 });
+
+// Appliquer les contrôles clavier à la fusée
+function applyControls() {
+    if (keysPressed["ArrowLeft"]) {
+        rocket.dx -= rocket.acceleration;
+    }
+    if (keysPressed["ArrowRight"]) {
+        rocket.dx += rocket.acceleration;
+    }
+    if (keysPressed["ArrowUp"]) {
+        rocket.dy -= rocket.acceleration;
+    }
+    if (keysPressed["ArrowDown"]) {
+        rocket.dy += rocket.acceleration;
+    }
+}
+
+// Gestion des événements tactiles
+let touchX = null;
+let touchY = null;
+
+// Contrôles de la fusée via écran tactile
+canvas.addEventListener("touchstart", handleTouchStart, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+canvas.addEventListener("touchend", handleTouchEnd, false);
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+    updateRocketVelocity(touchX, touchY);
+}
+
+function handleTouchMove(e) {
+    const touch = e.touches[0];
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+    updateRocketVelocity(touchX, touchY);
+    e.preventDefault(); // Empêcher le défilement de la page
+}
+
+function handleTouchEnd(e) {
+    touchX = null;
+    touchY = null;
+}
+
+function updateRocketVelocity(x, y) {
+    const centerX = rocket.x + rocket.width / 2;
+    const centerY = rocket.y + rocket.height / 2;
+
+    const deltaX = x - centerX;
+    const deltaY = y - centerY;
+
+    const angle = Math.atan2(deltaY, deltaX);
+    const speed = rocket.acceleration;
+
+    rocket.dx += Math.cos(angle) * speed;
+    rocket.dy += Math.sin(angle) * speed;
+}
+
+// Fonction principale de la boucle de jeu
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+
+    applyControls();      // Appliquer les contrôles clavier
+    moveRocket();         // Déplacer la fusée
+    updateStars();        // Mettre à jour les étoiles
+    updatePlanet();       // Mettre à jour la planète
+    updateMoon();         // Mettre à jour la lune
+    updateObstacles();    // Mettre à jour les obstacles
+
+    drawStars();          // Dessiner les étoiles
+    drawPlanet();         // Dessiner la planète
+    drawMoon();           // Dessiner la lune
+    drawObstacles();      // Dessiner les obstacles
+    drawRocket();         // Dessiner la fusée
+
+    requestAnimationFrame(gameLoop); // Demander la prochaine frame
+}
 
 // Démarrer le jeu après clic sur le bouton
 document.getElementById("startButton").addEventListener("click", () => {
@@ -290,7 +341,7 @@ document.getElementById("startButton").addEventListener("click", () => {
     canvas.style.display = "block";
     backgroundMusic.play();
     generateStars();    // Générer les étoiles avant de commencer
-    update();
+    gameLoop();         // Lancer la boucle de jeu
 
     // Augmenter la difficulté toutes les 10 secondes
     setInterval(increaseDifficulty, 10000);
