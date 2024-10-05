@@ -3,7 +3,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 // Facteur de réduction
-const scaleFactor = 2 / 3; // Réduction de la taille par un facteur de 2,3
+const scaleFactor = 3 / 5; // Réduction de la taille par un facteur de 2,3
 
 // Dimensions du canvas (inchangées)
 canvas.width = window.innerWidth;
