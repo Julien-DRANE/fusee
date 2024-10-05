@@ -83,6 +83,9 @@ let lives = 3; // Nombre initial de vies
 let bonusHeart = null;
 let bonusHeartInterval;
 
+// Variables pour les meilleurs scores
+let highScores = [];
+
 // Vérifier le chargement des images et démarrer le jeu
 function imageLoaded() {
     imagesLoaded++;
@@ -513,8 +516,119 @@ function increaseDifficulty() {
     startObstacleGeneration();
 }
 
+// Fonction pour charger les meilleurs scores depuis le localStorage
+function loadHighScores() {
+    const storedScores = localStorage.getItem('highScores');
+    if (storedScores) {
+        highScores = JSON.parse(storedScores);
+    }
+}
+
+// Fonction pour sauvegarder les meilleurs scores dans le localStorage
+function saveHighScores() {
+    localStorage.setItem('highScores', JSON.stringify(highScores));
+}
+
+// Fonction pour afficher l'écran de fin de jeu
+function displayGameOver() {
+    // Arrêter la boucle de jeu et nettoyer les intervalles
+    cancelAnimationFrame(animationFrameId);
+    clearInterval(difficultyInterval);
+    clearInterval(timerInterval);
+    clearInterval(bonusHeartInterval);
+    clearTimeout(obstacleGenerationTimeout);
+
+    // Cacher le canvas et le bouton de démarrage
+    canvas.style.display = "none";
+    document.getElementById("startButton").style.display = "none";
+
+    // Afficher l'écran de fin de jeu
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    gameOverScreen.style.display = "block";
+    scoreDisplay.innerText = `Votre score : ${score.toFixed(1)}s`;
+
+    // Mettre en pause la musique de fond
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+
+    // Ajouter un écouteur d'événement pour soumettre le score
+    document.getElementById("submitScoreButton").onclick = submitScore;
+
+    // Ajouter un écouteur d'événement pour redémarrer le jeu
+    document.getElementById("restartButton").onclick = function() {
+        gameOverScreen.style.display = "none";
+        startGame();
+    };
+}
+
+// Fonction pour soumettre le score du joueur
+function submitScore() {
+    const playerNameInput = document.getElementById("playerNameInput");
+    const playerName = playerNameInput.value.trim();
+    if (playerName !== '') {
+        highScores.push({ name: playerName, score: score });
+        // Trier les meilleurs scores par ordre décroissant
+        highScores.sort((a, b) => b.score - a.score);
+        // Conserver uniquement les 10 meilleurs scores
+        highScores = highScores.slice(0, 10);
+        saveHighScores();
+        displayHighScores();
+        // Réinitialiser le champ d'entrée
+        playerNameInput.value = '';
+        // Cacher l'écran de fin de jeu
+        document.getElementById("gameOverScreen").style.display = "none";
+    } else {
+        alert('Veuillez entrer votre nom.');
+    }
+}
+
+// Fonction pour afficher les meilleurs scores
+function displayHighScores() {
+    const highScoreTable = document.getElementById("highScoreTable");
+    const highScoresList = document.getElementById("highScoresList");
+    highScoresList.innerHTML = '';
+    highScores.forEach((entry) => {
+        const li = document.createElement('li');
+        li.innerText = `${entry.name} - ${entry.score.toFixed(1)}s`;
+        highScoresList.appendChild(li);
+    });
+    highScoreTable.style.display = "block";
+}
+
+// Mettre à jour les obstacles et gérer les collisions
+function updateObstacles() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obstacle = obstacles[i];
+        obstacle.y += obstacle.speed; // Appliquer la vitesse
+        if (obstacle.y > canvas.height) {
+            obstacles.splice(i, 1);
+            continue;
+        }
+        if (detectCollision(rocket, obstacle)) {
+            // Gérer la perte d'une vie
+            obstacles.splice(i, 1); // Retirer l'obstacle
+            lives -= 1;             // Perdre une vie
+
+            // Jouer le son de collision
+            collisionSound.currentTime = 0; // Réinitialiser le son
+            collisionSound.play();
+
+            if (lives <= 0) {
+                // Si aucune vie restante, arrêter le jeu et afficher le score
+                score = elapsedTime / 10; // Convertir en secondes avec une décimale
+                displayGameOver(); // Afficher l'écran de fin de jeu
+                break;
+            }
+        }
+    }
+}
+
 // Fonction pour démarrer ou réinitialiser le jeu
 function startGame() {
+    // Charger les meilleurs scores
+    loadHighScores();
+
     // Réinitialiser les variables du jeu
     rocket = { ...initialRocket };
     obstacles = [];
@@ -530,18 +644,22 @@ function startGame() {
     lives = 3; // Réinitialiser les vies
     bonusHeart = null; // Réinitialiser le cœur bonus
 
-    // Générer à nouveau les étoiles
+    // Générer les étoiles
     generateStars();
 
-    // Remettre le canvas visible et le bouton de démarrage caché
-    document.getElementById("startButton").style.display = "none";
+    // Cacher l'écran de fin de jeu et le tableau des meilleurs scores
+    document.getElementById("gameOverScreen").style.display = "none";
+    document.getElementById("highScoreTable").style.display = "none";
+
+    // Afficher le canvas et cacher le bouton de démarrage
     canvas.style.display = "block";
+    document.getElementById("startButton").style.display = "none";
 
     // Démarrer la musique de fond
     backgroundMusic.currentTime = 0;
     backgroundMusic.play();
 
-    // Recommencer la boucle de jeu
+    // Démarrer la boucle de jeu
     gameLoop();
 
     // Augmenter la difficulté toutes les 20 secondes
@@ -554,56 +672,15 @@ function startGame() {
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         elapsedTime += 1;
-    }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
+    }, 100); // Incrémente toutes les 100ms
 
     // Générer un cœur bonus toutes les 40 secondes
     clearInterval(bonusHeartInterval);
     bonusHeartInterval = setInterval(generateBonusHeart, 40000);
 }
 
-// Mettre à jour les obstacles et gérer les collisions
-function updateObstacles() {
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obstacle = obstacles[i];
-        obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
-        if (obstacle.y > canvas.height) {
-            obstacles.splice(i, 1);
-            continue;
-        }
-        if (detectCollision(rocket, obstacle)) {
-            // Gérer la perte d'une vie
-            obstacles.splice(i, 1); // Retirer l'obstacle en collision
-            lives -= 1;             // Perdre une vie
+// Appeler loadHighScores lorsque le script se charge
+loadHighScores();
 
-            // Jouer le son de collision
-            collisionSound.currentTime = 0; // Remettre le son à zéro
-            collisionSound.play();
-
-            if (lives <= 0) {
-                // Si aucune vie restante, arrêter le jeu et afficher le score
-                cancelAnimationFrame(animationFrameId);
-                clearInterval(difficultyInterval);
-                clearInterval(timerInterval);
-                clearInterval(bonusHeartInterval);
-                clearTimeout(obstacleGenerationTimeout);
-                showScore = true;
-                score = elapsedTime / 10; // Convertir en secondes avec une décimale
-                setTimeout(() => {
-                    // Afficher la bulle verte avec le score
-                    displayScore();
-                }, 100); // Légère pause avant d'afficher le score
-            }
-
-            break; // Sortir de la boucle après gestion de la collision
-        }
-    }
-}
-
-// Fonction pour réinitialiser le jeu (si nécessaire)
-function resetGame() {
-    // Cette fonction est maintenant intégrée dans 'startGame' et 'displayScore'
-    // Vous pouvez l'utiliser pour d'autres réinitialisations si nécessaire
-}
-
-// Événement pour démarrer le jeu
+// Écouteur d'événement pour le bouton de démarrage
 document.getElementById("startButton").addEventListener("click", startGame);
