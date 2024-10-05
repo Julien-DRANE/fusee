@@ -340,45 +340,6 @@ function drawBonusHeart() {
     }
 }
 
-// Dessiner le score dans une bulle verte
-function drawScore() {
-    const bubbleRadius = 100;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // Dessiner la bulle verte
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, bubbleRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
-    ctx.fill();
-    ctx.closePath();
-
-    // Dessiner le texte du score
-    ctx.font = "30px Arial";
-    ctx.fillStyle = "black";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`Score: ${score.toFixed(1)}s`, centerX, centerY);
-}
-
-// Fonction pour afficher le score et retourner au bouton "Start Game"
-function displayScore() {
-    // Dessiner le score une fois
-    drawScore();
-
-    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
-    setTimeout(() => {
-        showScore = false;
-        document.getElementById("startButton").style.display = "block";
-        canvas.style.display = "none";
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
-
-        // Arrêter l'intervalle du cœur bonus
-        clearInterval(bonusHeartInterval);
-    }, 2000); // Affiche le score pendant 2 secondes
-}
-
 // Gestion des touches pressées
 const keysPressed = {};
 
@@ -497,10 +458,6 @@ function gameLoop() {
     drawTimer();          // Dessiner le compteur de temps
     drawLives();          // Dessiner les vies
 
-    if (showScore) {
-        drawScore();      // Dessiner le score si nécessaire
-    }
-
     animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
 }
 
@@ -552,6 +509,9 @@ function displayGameOver() {
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
 
+    // Cacher le bouton "Rejouer" au début
+    document.getElementById("restartButton").style.display = "none";
+
     // Ajouter un écouteur d'événement pour soumettre le score
     document.getElementById("submitScoreButton").onclick = submitScore;
 
@@ -576,8 +536,9 @@ function submitScore() {
         displayHighScores();
         // Réinitialiser le champ d'entrée
         playerNameInput.value = '';
-        // Cacher l'écran de fin de jeu
-        document.getElementById("gameOverScreen").style.display = "none";
+
+        // Afficher le bouton "Rejouer"
+        document.getElementById("restartButton").style.display = "block";
     } else {
         alert('Veuillez entrer votre nom.');
     }
@@ -615,7 +576,7 @@ function updateObstacles() {
             collisionSound.play();
 
             if (lives <= 0) {
-                // Si aucune vie restante, arrêter le jeu et afficher le score
+                // Fin du jeu
                 score = elapsedTime / 10; // Convertir en secondes avec une décimale
                 displayGameOver(); // Afficher l'écran de fin de jeu
                 break;
