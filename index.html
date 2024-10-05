@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Colorful Rocket Game</title>
-    <!-- Balise meta viewport sans blocage du zoom -->
+    <!-- Balise meta viewport standard -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Styles globaux */
@@ -44,13 +44,12 @@
             padding: 40px 60px;
             font-size: 36px;
             cursor: pointer;
-            background-color: #fff;
+            background-color: #ff5722;
             border: none;
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             z-index: 1;
             color: #fff;
-            background-color: #ff5722;
         }
         #startButton:hover {
             background-color: #e64a19;
@@ -97,19 +96,18 @@
         #highScoreTable {
             display: none;
             position: absolute;
-            top: 5%;
-            right: 5%;
+            top: 10%;
+            right: 10%;
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 45px;
-            border-radius: 30px;
+            padding: 15px;
+            border-radius: 10px;
             color: #000;
-            max-width: 600px;
+            max-width: 200px;
             z-index: 1;
         }
         #highScoreTable h2 {
             margin-top: 0;
             text-align: center;
-            font-size: 72px;
         }
         #highScoresList {
             list-style: none;
@@ -117,8 +115,8 @@
             margin: 0;
         }
         #highScoresList li {
-            margin: 15px 0;
-            font-size: 54px;
+            margin: 5px 0;
+            font-size: 18px;
         }
     </style>
 </head>
