@@ -2,23 +2,20 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Définir le facteur de réduction
-const scaleDownFactor = 1 / 2.3; // ≈ 0.435
-
 // Dimensions du canvas
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // Variables globales initiales
 const initialRocket = {
-    x: (canvas.width / 2 - 25) * scaleDownFactor,
-    y: (canvas.height - 150) * scaleDownFactor,
-    width: 50 * scaleDownFactor,
-    height: 100 * scaleDownFactor,
+    x: canvas.width / 2 - 12.5, // largeur réduite
+    y: canvas.height - 75,      // hauteur réduite
+    width: 25,                  // largeur réduite
+    height: 50,                 // hauteur réduite
     dx: 0,
     dy: 0,
-    acceleration: 1.5 * scaleDownFactor,
-    maxSpeed: 15 * scaleDownFactor,
+    acceleration: 0.75,         // accélération réduite
+    maxSpeed: 7.5,              // vitesse maximale réduite
     friction: 0.93
 };
 
@@ -44,7 +41,7 @@ let score = 0;
 let touchActive = false;
 let touchX = 0;
 let touchY = 0;
-const followSpeed = 10 * scaleDownFactor; // Vitesse de suivi en pixels par frame
+const followSpeed = 5; // Vitesse de suivi en pixels par frame (réduite)
 
 // Charger l'image de la fusée
 const rocketImage = new Image();
@@ -119,8 +116,8 @@ obstacleImages.forEach(img => {
 function generateStars() {
     stars = []; // Réinitialiser les étoiles
     for (let i = 0; i < numberOfStars; i++) {
-        const size = (Math.random() * 3 + 1) * scaleDownFactor; // Taille de l'étoile
-        const speed = size / 2;             // Vitesse proportionnelle à la taille
+        const size = Math.random() * 1.5 + 0.5; // tailles réduites
+        const speed = size / 2;
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         stars.push({ x, y, size, speed });
@@ -129,36 +126,36 @@ function generateStars() {
 
 // Générer la planète (décor)
 function generatePlanet() {
-    const width = 400 * scaleDownFactor;
-    const height = 400 * scaleDownFactor;
+    const width = 200; // taille réduite
+    const height = 200;
     const x = Math.random() * (canvas.width - width);
     planet = {
         x: x,
-        y: -800 * scaleDownFactor,          // Position de départ hors de l'écran
+        y: -400,
         width: width,
         height: height,
-        speed: 0.5 * scaleDownFactor
+        speed: 0.25
     };
 }
 
 // Générer la lune (décor)
 function generateMoon() {
-    const width = 800 * scaleDownFactor;
-    const height = 800 * scaleDownFactor;
+    const width = 400; // taille réduite
+    const height = 400;
     const x = Math.random() * (canvas.width - width);
     moon = {
         x: x,
-        y: -1600 * scaleDownFactor,         // Position de départ hors de l'écran
+        y: -800,
         width: width,
         height: height,
-        speed: 0.2 * scaleDownFactor
+        speed: 0.1
     };
 }
 
 // Mettre à jour les positions des étoiles
 function updateStars() {
     stars.forEach(star => {
-        star.y += star.speed; // Faire descendre les étoiles
+        star.y += star.speed;
         if (star.y > canvas.height) {
             star.y = 0;
             star.x = Math.random() * canvas.width;
@@ -234,9 +231,9 @@ function startObstacleGeneration() {
 }
 
 function generateObstacle() {
-    const size = (Math.random() * 50 + 30) * scaleDownFactor;
+    const size = Math.random() * 25 + 15; // tailles réduites
     const x = Math.random() * (canvas.width - size);
-    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier * scaleDownFactor;
+    const speed = (Math.random() * 1.5 + 1) * obstacleSpeedMultiplier; // vitesse réduite
     const imageIndex = Math.floor(Math.random() * obstacleImages.length);
     obstacles.push({ x, y: -size, size, speed, image: obstacleImages[imageIndex] });
 }
@@ -275,7 +272,7 @@ function detectCollision(obj1, obj2) {
     const deltaY = obj1CenterY - obj2CenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30 * scaleDownFactor;
+    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 15; // seuil ajusté
 
     return distance < collisionThreshold;
 }
@@ -294,31 +291,31 @@ function drawObstacles() {
 
 // Dessiner le compteur de temps
 function drawTimer() {
-    ctx.font = `${24 * scaleDownFactor}px Arial`;
+    ctx.font = "12px Arial"; // taille réduite
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20 * scaleDownFactor, 20 * scaleDownFactor);
+    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 10, 10);
 }
 
 // Dessiner les cœurs (vies) en haut à droite
 function drawLives() {
-    const heartSize = 30 * scaleDownFactor;
-    const padding = 10 * scaleDownFactor;
+    const heartSize = 15; // taille réduite
+    const padding = 5;
     for (let i = 0; i < lives; i++) {
-        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20 * scaleDownFactor, heartSize, heartSize);
+        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 10, heartSize, heartSize);
     }
 }
 
 // Générer le cœur bonus
 function generateBonusHeart() {
-    const size = 30 * scaleDownFactor;
+    const size = 15; // taille réduite
     const x = Math.random() * (canvas.width - size);
     bonusHeart = {
         x: x,
         y: -size,
         size: size,
-        speed: 2 * scaleDownFactor
+        speed: 1 // vitesse réduite
     };
 }
 
@@ -407,7 +404,7 @@ function updateRocketPosition() {
 
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    const deadZone = 10 * scaleDownFactor;
+    const deadZone = 5; // pixels
 
     if (distance > deadZone) {
         const angle = Math.atan2(deltaY, deltaX);
@@ -461,4 +458,15 @@ function gameLoop() {
     animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-// ... Le reste du code reste inchangé ...
+// Le reste du code reste inchangé (fonctions increaseDifficulty, loadHighScores, etc.)
+
+// Fonction pour démarrer ou réinitialiser le jeu
+function startGame() {
+    // Votre code pour démarrer le jeu
+}
+
+// Appeler loadHighScores lorsque le script se charge
+loadHighScores();
+
+// Écouteur d'événement pour le bouton de démarrage
+document.getElementById("startButton").addEventListener("click", startGame);
