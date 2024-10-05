@@ -29,6 +29,14 @@ const backgroundMusic = document.getElementById("backgroundMusic");
 let difficultyLevel = 1; // Niveau de difficulté initial
 let obstacleSpeedMultiplier = 1; // Multiplicateur de vitesse des obstacles
 
+// Compteur de temps
+let elapsedTime = 0; // En dixièmes de seconde
+let timerInterval;
+
+// Variable pour afficher le score
+let showScore = false;
+let score = 0;
+
 // Charger l'image de la fusée
 const rocketImage = new Image();
 rocketImage.src = "rocket.png";
@@ -232,6 +240,9 @@ function resetGame() {
     moon = null;
     difficultyLevel = 1;
     obstacleSpeedMultiplier = 1;
+    elapsedTime = 0;
+    showScore = false;
+    score = 0;
 
     // Générer à nouveau les étoiles
     generateStars();
@@ -239,6 +250,10 @@ function resetGame() {
     // Remettre le canvas visible et le bouton de démarrage caché
     document.getElementById("startButton").style.display = "none";
     canvas.style.display = "block";
+
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
 
     // Recommencer la boucle de jeu
     gameLoop();
@@ -250,6 +265,12 @@ function resetGame() {
     // Générer des obstacles à intervalles réguliers
     clearInterval(obstacleInterval);
     obstacleInterval = setInterval(generateObstacle, 800);
+
+    // Réinitialiser le timer
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        elapsedTime += 1;
+    }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
 }
 
 // Mettre à jour les obstacles et gérer les collisions
@@ -262,11 +283,17 @@ function updateObstacles() {
             continue;
         }
         if (detectCollision(rocket, obstacle)) {
-            // Arrêter toutes les boucles et redémarrer le jeu
+            // Arrêter toutes les boucles et réinitialiser le jeu après un court délai pour afficher le score
             cancelAnimationFrame(animationFrameId);
             clearInterval(obstacleInterval);
             clearInterval(difficultyInterval);
-            resetGame();
+            clearInterval(timerInterval);
+            showScore = true;
+            score = elapsedTime / 10; // Convertir en secondes avec une décimale
+            setTimeout(() => {
+                // Afficher la bulle verte avec le score
+                displayScore();
+            }, 100); // Légère pause avant d'afficher le score
             break; // Sortir de la boucle après réinitialisation
         }
     }
@@ -282,6 +309,49 @@ function drawObstacles() {
     obstacles.forEach(obstacle => {
         ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
     });
+}
+
+// Dessiner le compteur de temps
+function drawTimer() {
+    ctx.font = "24px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Time: ${ (elapsedTime / 10).toFixed(1) }s`, 20, 20);
+}
+
+// Dessiner le score dans une bulle verte
+function drawScore() {
+    const bubbleRadius = 100;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Dessiner la bulle verte
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, bubbleRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+    ctx.fill();
+    ctx.closePath();
+
+    // Dessiner le texte du score
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`Score: ${score.toFixed(1)}s`, centerX, centerY);
+}
+
+// Fonction pour afficher le score et retourner au bouton "Start Game"
+function displayScore() {
+    // Dessiner le score une fois
+    drawScore();
+
+    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
+    setTimeout(() => {
+        showScore = false;
+        document.getElementById("startButton").style.display = "block";
+        canvas.style.display = "none";
+    }, 2000); // Affiche le score pendant 2 secondes
 }
 
 // Gestion des touches pressées
@@ -384,6 +454,11 @@ function gameLoop() {
     drawMoon();           // Dessiner la lune
     drawObstacles();      // Dessiner les obstacles
     drawRocket();         // Dessiner la fusée
+    drawTimer();          // Dessiner le compteur de temps
+
+    if (showScore) {
+        drawScore();      // Dessiner le score si nécessaire
+    }
 
     animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
 }
@@ -409,6 +484,9 @@ function startGame() {
     moon = null;
     difficultyLevel = 1;
     obstacleSpeedMultiplier = 1;
+    elapsedTime = 0;
+    showScore = false;
+    score = 0;
 
     // Générer à nouveau les étoiles
     generateStars();
@@ -418,6 +496,7 @@ function startGame() {
     canvas.style.display = "block";
 
     // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
     backgroundMusic.play();
 
     // Commencer la boucle de jeu
@@ -428,6 +507,11 @@ function startGame() {
 
     // Générer des obstacles à intervalles réguliers
     obstacleInterval = setInterval(generateObstacle, 800);
+
+    // Démarrer le timer
+    timerInterval = setInterval(() => {
+        elapsedTime += 1;
+    }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
 }
 
 // Mettre à jour les obstacles et gérer les collisions
@@ -440,57 +524,57 @@ function updateObstacles() {
             continue;
         }
         if (detectCollision(rocket, obstacle)) {
-            // Arrêter toutes les boucles et réinitialiser le jeu
+            // Arrêter toutes les boucles et réinitialiser le jeu après un court délai pour afficher le score
             cancelAnimationFrame(animationFrameId);
             clearInterval(obstacleInterval);
             clearInterval(difficultyInterval);
-            resetGame();
+            clearInterval(timerInterval);
+            showScore = true;
+            score = elapsedTime / 10; // Convertir en secondes avec une décimale
+            setTimeout(() => {
+                // Afficher la bulle verte avec le score
+                displayScore();
+            }, 100); // Légère pause avant d'afficher le score
             break; // Sortir de la boucle après réinitialisation
         }
     }
 }
 
-// Dessiner la fusée
-function drawRocket() {
-    ctx.drawImage(rocketImage, rocket.x, rocket.y, rocket.width, rocket.height);
+// Dessiner le score dans une bulle verte
+function drawScore() {
+    const bubbleRadius = 100;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Dessiner la bulle verte
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, bubbleRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+    ctx.fill();
+    ctx.closePath();
+
+    // Dessiner le texte du score
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`Score: ${score.toFixed(1)}s`, centerX, centerY);
 }
 
-// Dessiner les obstacles
-function drawObstacles() {
-    obstacles.forEach(obstacle => {
-        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
-    });
+// Fonction pour afficher le score et retourner au bouton "Start Game"
+function displayScore() {
+    // Dessiner le score une fois
+    drawScore();
+
+    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
+    setTimeout(() => {
+        showScore = false;
+        document.getElementById("startButton").style.display = "block";
+        canvas.style.display = "none";
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
+    }, 2000); // Affiche le score pendant 2 secondes
 }
 
-// Fonction pour réinitialiser le jeu
-function resetGame() {
-    // Réinitialiser les variables du jeu
-    rocket = { ...initialRocket };
-    obstacles = [];
-    stars = [];
-    planet = null;
-    moon = null;
-    difficultyLevel = 1;
-    obstacleSpeedMultiplier = 1;
-
-    // Générer à nouveau les étoiles
-    generateStars();
-
-    // Remettre le canvas visible et le bouton de démarrage caché
-    document.getElementById("startButton").style.display = "none";
-    canvas.style.display = "block";
-
-    // Recommencer la boucle de jeu
-    gameLoop();
-
-    // Réinitialiser l'intervalle de difficulté
-    clearInterval(difficultyInterval);
-    difficultyInterval = setInterval(increaseDifficulty, 10000);
-
-    // Générer des obstacles à intervalles réguliers
-    clearInterval(obstacleInterval);
-    obstacleInterval = setInterval(generateObstacle, 800);
-}
-
-// Démarrer le jeu après clic sur le bouton
+// Fonction pour démarrer ou réinitialiser le jeu
 document.getElementById("startButton").addEventListener("click", startGame);
