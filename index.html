@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Colorful Rocket Game</title>
     <style>
+        /* Vos styles existants */
         body, html {
             margin: 0;
             padding: 0;
@@ -32,6 +32,54 @@
         #startButton:hover {
             background-color: #f0f0f0;
         }
+        /* Styles pour l'écran de fin de jeu */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(30, 31, 38, 0.9);
+            padding: 30px;
+            text-align: center;
+            color: white;
+            border-radius: 10px;
+        }
+        #gameOverScreen input {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        #gameOverScreen button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Styles pour le tableau des meilleurs scores */
+        #highScoreTable {
+            display: none;
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: #000;
+        }
+        #highScoreTable h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        #highScoresList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #highScoresList li {
+            margin: 5px 0;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -40,6 +88,21 @@
     </audio>
     <button id="startButton">Start Game</button>
     <canvas id="gameCanvas"></canvas>
+
+    <!-- Écran de fin de jeu pour entrer le nom du joueur et afficher le score -->
+    <div id="gameOverScreen">
+        <div id="scoreDisplay"></div>
+        <input type="text" id="playerNameInput" placeholder="Entrez votre nom">
+        <button id="submitScoreButton">Enregistrer le Score</button>
+        <button id="restartButton">Rejouer</button>
+    </div>
+
+    <!-- Tableau des Meilleurs Scores -->
+    <div id="highScoreTable">
+        <h2>Meilleurs Scores</h2>
+        <ol id="highScoresList"></ol>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>
