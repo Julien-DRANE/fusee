@@ -231,7 +231,7 @@ function updateObstacles() {
         }
         if (detectCollision(rocket, obstacle)) {
             // Rediriger vers la page start_game77.html en cas de collision
-            window.location.href = "start_game77.html";
+            window.location.href = "https://julien-drane.github.io/fusee/";
         }
     }
 }
