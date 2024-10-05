@@ -6,8 +6,8 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Variables globales
-let rocket = {
+// Variables globales initiales
+const initialRocket = {
     x: canvas.width / 2 - 25,
     y: canvas.height - 150,
     width: 50,
@@ -18,6 +18,8 @@ let rocket = {
     maxSpeed: 15,        // Limite de la vitesse maximale
     friction: 0.93       // Réduction de la friction pour maintenir de l'inertie
 };
+
+let rocket = { ...initialRocket };
 let obstacles = [];
 let stars = [];
 let planet = null;       // Variable pour la planète
@@ -220,7 +222,37 @@ function detectCollision(rocket, obstacle) {
     );
 }
 
-// Mettre à jour les obstacles
+// Fonction pour réinitialiser le jeu
+function resetGame() {
+    // Réinitialiser les variables du jeu
+    rocket = { ...initialRocket };
+    obstacles = [];
+    stars = [];
+    planet = null;
+    moon = null;
+    difficultyLevel = 1;
+    obstacleSpeedMultiplier = 1;
+
+    // Générer à nouveau les étoiles
+    generateStars();
+
+    // Remettre le canvas visible et le bouton de démarrage caché
+    document.getElementById("startButton").style.display = "none";
+    canvas.style.display = "block";
+
+    // Recommencer la boucle de jeu
+    gameLoop();
+
+    // Réinitialiser l'intervalle de difficulté
+    clearInterval(difficultyInterval);
+    difficultyInterval = setInterval(increaseDifficulty, 10000);
+
+    // Générer des obstacles à intervalles réguliers
+    clearInterval(obstacleInterval);
+    obstacleInterval = setInterval(generateObstacle, 800);
+}
+
+// Mettre à jour les obstacles et gérer les collisions
 function updateObstacles() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obstacle = obstacles[i];
@@ -230,8 +262,12 @@ function updateObstacles() {
             continue;
         }
         if (detectCollision(rocket, obstacle)) {
-            // Rediriger vers la page start_game77.html en cas de collision
-            window.location.href = "https://julien-drane.github.io/fusee/";
+            // Arrêter toutes les boucles et redémarrer le jeu
+            cancelAnimationFrame(animationFrameId);
+            clearInterval(obstacleInterval);
+            clearInterval(difficultyInterval);
+            resetGame();
+            break; // Sortir de la boucle après réinitialisation
         }
     }
 }
@@ -317,6 +353,10 @@ function updateRocketVelocity(x, y) {
 }
 
 // Fonction principale de la boucle de jeu
+let animationFrameId;
+let difficultyInterval;
+let obstacleInterval;
+
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
 
@@ -333,7 +373,7 @@ function gameLoop() {
     drawObstacles();      // Dessiner les obstacles
     drawRocket();         // Dessiner la fusée
 
-    requestAnimationFrame(gameLoop); // Demander la prochaine frame
+    animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
 }
 
 // Augmenter la difficulté progressivement
@@ -356,8 +396,8 @@ document.getElementById("startButton").addEventListener("click", () => {
     gameLoop();         // Lancer la boucle de jeu
 
     // Augmenter la difficulté toutes les 10 secondes
-    setInterval(increaseDifficulty, 10000);
-});
+    difficultyInterval = setInterval(increaseDifficulty, 10000);
 
-// Générer des obstacles à intervalles réguliers
-setInterval(generateObstacle, 800);
+    // Générer des obstacles à intervalles réguliers
+    obstacleInterval = setInterval(generateObstacle, 800);
+});
