@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
             font-family: Arial, sans-serif;
         }
         canvas {
-            display: block;
+            display: none; /* Cacher le canvas jusqu'au démarrage */
             background: #000;
         }
         #startButton {
@@ -36,7 +36,7 @@
         <source src="soft-music.mp3" type="audio/mpeg">
     </audio>
     <button id="startButton">Start Game</button>
-    <canvas id="gameCanvas" style="display: none;"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <script src="game.js"></script>
 </body>
 </html>
