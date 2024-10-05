@@ -124,9 +124,9 @@ function generatePlanet() {
     planet = {
         x: x,
         y: -800,          // Position de départ hors de l'écran
-        width: 400,       // Largeur de la planète
-        height: 400,      // Hauteur de la planète
-        speed: 0.5        // Vitesse lente pour traverser l'écran
+        width: 400,
+        height: 400,
+        speed: 0.5
     };
 }
 
@@ -136,9 +136,9 @@ function generateMoon() {
     moon = {
         x: x,
         y: -1600,         // Position de départ hors de l'écran
-        width: 800,       // Largeur de la lune
-        height: 800,      // Hauteur de la lune
-        speed: 0.2        // Vitesse très lente pour traverser l'écran
+        width: 800,
+        height: 800,
+        speed: 0.2
     };
 }
 
@@ -147,7 +147,7 @@ function updateStars() {
     stars.forEach(star => {
         star.y += star.speed; // Faire descendre les étoiles
         if (star.y > canvas.height) {
-            star.y = 0; // Réinitialiser la position pour créer un effet de boucle
+            star.y = 0;
             star.x = Math.random() * canvas.width;
         }
     });
@@ -156,12 +156,11 @@ function updateStars() {
 // Mettre à jour la position de la planète
 function updatePlanet() {
     if (planet) {
-        planet.y += planet.speed; // Faire descendre la planète
+        planet.y += planet.speed;
         if (planet.y > canvas.height) {
-            planet = null; // Supprimer la planète lorsqu'elle sort de l'écran
+            planet = null;
         }
     } else {
-        // Générer la planète avec une probabilité de 1 sur 500 à chaque frame
         if (Math.random() < 0.002) {
             generatePlanet();
         }
@@ -171,12 +170,11 @@ function updatePlanet() {
 // Mettre à jour la position de la lune
 function updateMoon() {
     if (moon) {
-        moon.y += moon.speed; // Faire descendre la lune
+        moon.y += moon.speed;
         if (moon.y > canvas.height) {
-            moon = null; // Supprimer la lune lorsqu'elle sort de l'écran
+            moon = null;
         }
     } else {
-        // Générer la lune avec une probabilité de 1 sur 1000 à chaque frame
         if (Math.random() < 0.001) {
             generateMoon();
         }
@@ -209,10 +207,24 @@ function drawMoon() {
 }
 
 // Fonction pour générer des obstacles
+let obstacleSpawnInterval = 1000; // Intervalle initial de génération d'obstacles en millisecondes
+let obstacleGenerationTimeout;
+
+function startObstacleGeneration() {
+    // Effacer le timeout précédent s'il existe
+    clearTimeout(obstacleGenerationTimeout);
+
+    // Générer un obstacle
+    generateObstacle();
+
+    // Planifier la prochaine génération
+    obstacleGenerationTimeout = setTimeout(startObstacleGeneration, obstacleSpawnInterval);
+}
+
 function generateObstacle() {
     const size = Math.random() * 50 + 30;
     const x = Math.random() * (canvas.width - size);
-    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier; // Appliquer le multiplicateur de vitesse
+    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier;
     const imageIndex = Math.floor(Math.random() * obstacleImages.length);
     obstacles.push({ x, y: -size, size, speed, image: obstacleImages[imageIndex] });
 }
@@ -220,50 +232,39 @@ function generateObstacle() {
 // Déplacer la fusée avec inertie ou suivant le doigt
 function moveRocket() {
     if (!touchActive) {
-        // Appliquer la friction pour ralentir progressivement la fusée
         rocket.dx *= rocket.friction;
         rocket.dy *= rocket.friction;
 
-        // Limiter la vitesse maximale de la fusée
         if (rocket.dx > rocket.maxSpeed) rocket.dx = rocket.maxSpeed;
         if (rocket.dx < -rocket.maxSpeed) rocket.dx = -rocket.maxSpeed;
         if (rocket.dy > rocket.maxSpeed) rocket.dy = rocket.maxSpeed;
         if (rocket.dy < -rocket.maxSpeed) rocket.dy = -rocket.maxSpeed;
 
-        // Déplacer la fusée selon la vitesse
         rocket.x += rocket.dx;
         rocket.y += rocket.dy;
     }
 
-    // Empêcher la fusée de sortir du canvas horizontalement
     if (rocket.x < 0) rocket.x = 0;
     if (rocket.x + rocket.width > canvas.width) rocket.x = canvas.width - rocket.width;
-
-    // Empêcher la fusée de sortir du canvas verticalement
     if (rocket.y < 0) rocket.y = 0;
     if (rocket.y + rocket.height > canvas.height) rocket.y = canvas.height - rocket.height;
 }
 
 // Gérer les collisions avec tolérance
 function detectCollision(obj1, obj2) {
-    // Vérifier si obj2 existe (pour éviter les erreurs avec le cœur bonus)
     if (!obj2) return false;
 
-    // Calculer les centres
     const obj1CenterX = obj1.x + obj1.width / 2;
     const obj1CenterY = obj1.y + obj1.height / 2;
     const obj2CenterX = obj2.x + obj2.size / 2;
     const obj2CenterY = obj2.y + obj2.size / 2;
 
-    // Calculer la distance entre les centres
     const deltaX = obj1CenterX - obj2CenterX;
     const deltaY = obj1CenterY - obj2CenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Définir le seuil de collision avec tolérance
-    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30; // 30 pixels de tolérance
+    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30;
 
-    // Vérifier si la distance est inférieure au seuil
     return distance < collisionThreshold;
 }
 
@@ -462,7 +463,6 @@ function updateRocketPosition() {
 // Fonction principale de la boucle de jeu
 let animationFrameId;
 let difficultyInterval;
-let obstacleInterval;
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
@@ -501,10 +501,11 @@ function increaseDifficulty() {
     difficultyLevel += 1;            // Augmenter le niveau de difficulté
     obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
 
-    // Ajouter plus d'obstacles
-    for (let i = 0; i < difficultyLevel; i++) {
-        generateObstacle();
-    }
+    // Diminuer l'intervalle de génération des obstacles pour en générer plus fréquemment
+    obstacleSpawnInterval = Math.max(300, obstacleSpawnInterval - 100); // Ne pas descendre en dessous de 300ms
+
+    // Redémarrer la génération des obstacles avec le nouvel intervalle
+    startObstacleGeneration();
 }
 
 // Fonction pour démarrer ou réinitialiser le jeu
@@ -517,6 +518,7 @@ function startGame() {
     moon = null;
     difficultyLevel = 1;
     obstacleSpeedMultiplier = 1;
+    obstacleSpawnInterval = 1000; // Réinitialiser l'intervalle de génération des obstacles
     elapsedTime = 0;
     showScore = false;
     score = 0;
@@ -538,10 +540,10 @@ function startGame() {
     gameLoop();
 
     // Augmenter la difficulté toutes les 20 secondes
-    difficultyInterval = setInterval(increaseDifficulty, 20000); // Anciennement 5000ms
+    difficultyInterval = setInterval(increaseDifficulty, 20000);
 
-    // Générer des obstacles à intervalles réguliers
-    obstacleInterval = setInterval(generateObstacle, 800);
+    // Démarrer la génération des obstacles
+    startObstacleGeneration();
 
     // Démarrer le timer
     clearInterval(timerInterval);
@@ -575,10 +577,10 @@ function updateObstacles() {
             if (lives <= 0) {
                 // Si aucune vie restante, arrêter le jeu et afficher le score
                 cancelAnimationFrame(animationFrameId);
-                clearInterval(obstacleInterval);
                 clearInterval(difficultyInterval);
                 clearInterval(timerInterval);
                 clearInterval(bonusHeartInterval);
+                clearTimeout(obstacleGenerationTimeout);
                 showScore = true;
                 score = elapsedTime / 10; // Convertir en secondes avec une décimale
                 setTimeout(() => {
