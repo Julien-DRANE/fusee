@@ -14,7 +14,7 @@ let rocket = {
     height: 100,
     dx: 0,
     dy: 0,
-    acceleration: 1.5,  // Accélération initiale
+    acceleration: 1.5,  // Accélération initiale (utilisée pour le clavier)
     maxSpeed: 15,        // Limite de la vitesse maximale
     friction: 0.93       // Réduction de la friction pour maintenir de l'inertie
 };
@@ -305,9 +305,9 @@ function updateRocketVelocity(x, y) {
     const deltaY = y - centerY;
 
     const angle = Math.atan2(deltaY, deltaX);
-    const speed = rocket.acceleration;
+    const speed = 5; // Augmenter la vitesse pour une meilleure réactivité
 
-    // Définir la vitesse vers le point touché plutôt que d'ajouter
+    // Définir la vitesse directement vers la direction du toucher
     rocket.dx = Math.cos(angle) * speed;
     rocket.dy = Math.sin(angle) * speed;
 }
@@ -330,6 +330,17 @@ function gameLoop() {
     drawRocket();         // Dessiner la fusée
 
     requestAnimationFrame(gameLoop); // Demander la prochaine frame
+}
+
+// Augmenter la difficulté progressivement
+function increaseDifficulty() {
+    difficultyLevel += 1;            // Augmenter le niveau de difficulté
+    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
+
+    // Ajouter plus d'obstacles
+    for (let i = 0; i < difficultyLevel; i++) {
+        generateObstacle();
+    }
 }
 
 // Démarrer le jeu après clic sur le bouton
