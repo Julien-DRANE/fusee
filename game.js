@@ -6,7 +6,7 @@ const ctx = canvas.getContext("2d");
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 // Définir un facteur d'échelle pour les appareils mobiles
-const scaleFactor = isMobile ? 2 : 3;
+const scaleFactor = isMobile ? 2 : 1;
 
 // Dimensions du canvas
 canvas.width = window.innerWidth;
@@ -20,23 +20,23 @@ const initialRocket = {
     height: 100 * scaleFactor,
     dx: 0,
     dy: 0,
-    acceleration: 1.5 * scaleFactor,  // Accélération initiale (utilisée pour le clavier)
-    maxSpeed: 15 * scaleFactor,        // Limite de la vitesse maximale
-    friction: 0.93       // Réduction de la friction pour maintenir de l'inertie
+    acceleration: 1.5 * scaleFactor,
+    maxSpeed: 15 * scaleFactor,
+    friction: 0.93
 };
 
 let rocket = { ...initialRocket };
 let obstacles = [];
 let stars = [];
-let planet = null;       // Variable pour la planète
-let moon = null;         // Variable pour la lune
+let planet = null;
+let moon = null;
 const numberOfStars = 100;
 const backgroundMusic = document.getElementById("backgroundMusic");
-let difficultyLevel = 1; // Niveau de difficulté initial
-let obstacleSpeedMultiplier = 1; // Multiplicateur de vitesse des obstacles
+let difficultyLevel = 1;
+let obstacleSpeedMultiplier = 1;
 
 // Compteur de temps
-let elapsedTime = 0; // En dixièmes de seconde
+let elapsedTime = 0;
 let timerInterval;
 
 // Variables pour afficher le score
@@ -47,7 +47,7 @@ let score = 0;
 let touchActive = false;
 let touchX = 0;
 let touchY = 0;
-const followSpeed = 10 * scaleFactor; // Vitesse de suivi en pixels par frame
+const followSpeed = 10 * scaleFactor;
 
 // Charger l'image de la fusée
 const rocketImage = new Image();
@@ -73,17 +73,17 @@ const heartImage = new Image();
 heartImage.src = "coeur.png";
 
 // Charger le son de collision
-const collisionSound = new Audio('collision.mp3'); // Assure-toi que collision.mp3 est dans le même répertoire
+const collisionSound = new Audio('collision.mp3');
 
 // Charger le son de vie supplémentaire
-const extraLifeSound = new Audio('extra.mp3'); // Assure-toi que extra.mp3 est dans le même répertoire
+const extraLifeSound = new Audio('extra.mp3');
 
 // Gérer le chargement des images
 let imagesLoaded = 0;
 const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, la planète, la lune et les cœurs
 
 // Variables de vies
-let lives = 3; // Nombre initial de vies
+let lives = 3;
 
 // Variables pour le cœur bonus
 let bonusHeart = null;
@@ -120,10 +120,10 @@ obstacleImages.forEach(img => {
 
 // Générer des étoiles aléatoires
 function generateStars() {
-    stars = []; // Réinitialiser les étoiles
+    stars = [];
     for (let i = 0; i < numberOfStars; i++) {
-        const size = (Math.random() * 3 + 1) * scaleFactor; // Taille de l'étoile
-        const speed = size / 2;             // Vitesse proportionnelle à la taille
+        const size = (Math.random() * 3 + 1) * scaleFactor;
+        const speed = size / 2;
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         stars.push({ x, y, size, speed });
@@ -137,7 +137,7 @@ function generatePlanet() {
     const x = Math.random() * (canvas.width - width);
     planet = {
         x: x,
-        y: -800 * scaleFactor,          // Position de départ hors de l'écran
+        y: -800 * scaleFactor,
         width: width,
         height: height,
         speed: 0.5 * scaleFactor
@@ -151,7 +151,7 @@ function generateMoon() {
     const x = Math.random() * (canvas.width - width);
     moon = {
         x: x,
-        y: -1600 * scaleFactor,         // Position de départ hors de l'écran
+        y: -1600 * scaleFactor,
         width: width,
         height: height,
         speed: 0.2 * scaleFactor
@@ -223,11 +223,10 @@ function drawMoon() {
 }
 
 // Fonction pour générer des obstacles
-let obstacleSpawnInterval = 1000; // Intervalle initial de génération d'obstacles en millisecondes
+let obstacleSpawnInterval = 1000;
 let obstacleGenerationTimeout;
 
 function startObstacleGeneration() {
-    // Effacer le timeout précédent s'il existe
     clearTimeout(obstacleGenerationTimeout);
 
     // Générer un obstacle
@@ -305,10 +304,10 @@ function drawTimer() {
     ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20 * scaleFactor, 20 * scaleFactor);
 }
 
-// Dessiner les cœurs (vies) en haut à droite
+// Dessiner les cœurs (vies)
 function drawLives() {
-    const heartSize = 30 * scaleFactor; // Taille d'un cœur
-    const padding = 10 * scaleFactor;    // Espacement entre les cœurs
+    const heartSize = 30 * scaleFactor;
+    const padding = 10 * scaleFactor;
     for (let i = 0; i < lives; i++) {
         ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20 * scaleFactor, heartSize, heartSize);
     }
@@ -316,13 +315,13 @@ function drawLives() {
 
 // Générer le cœur bonus
 function generateBonusHeart() {
-    const size = 30 * scaleFactor; // Taille du cœur bonus
+    const size = 30 * scaleFactor;
     const x = Math.random() * (canvas.width - size);
     bonusHeart = {
         x: x,
         y: -size,
         size: size,
-        speed: 2 * scaleFactor // Vitesse de descente du cœur bonus
+        speed: 2 * scaleFactor
     };
 }
 
@@ -331,14 +330,13 @@ function updateBonusHeart() {
     if (bonusHeart) {
         bonusHeart.y += bonusHeart.speed;
         if (bonusHeart.y > canvas.height) {
-            bonusHeart = null; // Supprimer le cœur bonus lorsqu'il sort de l'écran
+            bonusHeart = null;
         }
-        // Détection de collision avec la fusée
         if (detectCollision(rocket, bonusHeart)) {
-            lives = Math.min(lives + 1, 3); // Augmenter les vies jusqu'à un maximum de 3
-            extraLifeSound.currentTime = 0; // Remettre le son à zéro
-            extraLifeSound.play(); // Jouer le son de vie supplémentaire
-            bonusHeart = null; // Retirer le cœur bonus après collecte
+            lives = Math.min(lives + 1, 3);
+            extraLifeSound.currentTime = 0;
+            extraLifeSound.play();
+            bonusHeart = null;
         }
     }
 }
@@ -388,14 +386,14 @@ function handleTouchStart(e) {
     touchActive = true;
     touchX = touch.clientX;
     touchY = touch.clientY;
-    e.preventDefault(); // Empêcher le défilement de la page
+    e.preventDefault();
 }
 
 function handleTouchMove(e) {
     const touch = e.touches[0];
     touchX = touch.clientX;
     touchY = touch.clientY;
-    e.preventDefault(); // Empêcher le défilement de la page
+    e.preventDefault();
 }
 
 function handleTouchEnd(e) {
@@ -410,21 +408,16 @@ function updateRocketPosition() {
     const deltaX = touchX - centerX;
     const deltaY = touchY - centerY;
 
-    // Calculer la distance
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Définir un seuil de distance pour éviter les mouvements mineurs
-    const deadZone = 10 * scaleFactor; // pixels
+    const deadZone = 10 * scaleFactor;
 
     if (distance > deadZone) {
-        // Calculer la direction
         const angle = Math.atan2(deltaY, deltaX);
 
-        // Calculer le mouvement
         const moveX = Math.cos(angle) * followSpeed;
         const moveY = Math.sin(angle) * followSpeed;
 
-        // Appliquer le mouvement, en s'assurant de ne pas dépasser la position du doigt
         if (Math.abs(moveX) > Math.abs(deltaX)) {
             rocket.x = touchX - rocket.width / 2;
         } else {
@@ -444,46 +437,44 @@ let animationFrameId;
 let difficultyInterval;
 
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    applyControls();      // Appliquer les contrôles clavier
-    moveRocket();         // Déplacer la fusée
+    applyControls();
+    moveRocket();
 
     if (touchActive) {
-        updateRocketPosition(); // Mettre à jour la position de la fusée vers le doigt
+        updateRocketPosition();
     }
 
-    updateStars();        // Mettre à jour les étoiles
-    updatePlanet();       // Mettre à jour la planète
-    updateMoon();         // Mettre à jour la lune
-    updateObstacles();    // Mettre à jour les obstacles
-    updateBonusHeart();   // Mettre à jour le cœur bonus
+    updateStars();
+    updatePlanet();
+    updateMoon();
+    updateObstacles();
+    updateBonusHeart();
 
-    drawStars();          // Dessiner les étoiles
-    drawPlanet();         // Dessiner la planète
-    drawMoon();           // Dessiner la lune
-    drawObstacles();      // Dessiner les obstacles
-    drawBonusHeart();     // Dessiner le cœur bonus
-    drawRocket();         // Dessiner la fusée
-    drawTimer();          // Dessiner le compteur de temps
-    drawLives();          // Dessiner les vies
+    drawStars();
+    drawPlanet();
+    drawMoon();
+    drawObstacles();
+    drawBonusHeart();
+    drawRocket();
+    drawTimer();
+    drawLives();
 
-    animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
+    animationFrameId = requestAnimationFrame(gameLoop);
 }
 
 // Augmenter la difficulté progressivement
 function increaseDifficulty() {
-    difficultyLevel += 1;            // Augmenter le niveau de difficulté
-    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
+    difficultyLevel += 1;
+    obstacleSpeedMultiplier += 0.2;
 
-    // Diminuer l'intervalle de génération des obstacles pour en générer plus fréquemment
-    obstacleSpawnInterval = Math.max(300, obstacleSpawnInterval - 100); // Ne pas descendre en dessous de 300ms
+    obstacleSpawnInterval = Math.max(300, obstacleSpawnInterval - 100);
 
-    // Redémarrer la génération des obstacles avec le nouvel intervalle
     startObstacleGeneration();
 }
 
-// Fonction pour charger les meilleurs scores depuis le localStorage
+// Charger les meilleurs scores depuis le localStorage
 function loadHighScores() {
     const storedScores = localStorage.getItem('highScores');
     if (storedScores) {
@@ -491,70 +482,59 @@ function loadHighScores() {
     }
 }
 
-// Fonction pour sauvegarder les meilleurs scores dans le localStorage
+// Sauvegarder les meilleurs scores dans le localStorage
 function saveHighScores() {
     localStorage.setItem('highScores', JSON.stringify(highScores));
 }
 
-// Fonction pour afficher l'écran de fin de jeu
+// Afficher l'écran de fin de jeu
 function displayGameOver() {
-    // Arrêter la boucle de jeu et nettoyer les intervalles
     cancelAnimationFrame(animationFrameId);
     clearInterval(difficultyInterval);
     clearInterval(timerInterval);
     clearInterval(bonusHeartInterval);
     clearTimeout(obstacleGenerationTimeout);
 
-    // Cacher le canvas et le bouton de démarrage
     canvas.style.display = "none";
     document.getElementById("startButton").style.display = "none";
 
-    // Afficher l'écran de fin de jeu
     const gameOverScreen = document.getElementById("gameOverScreen");
     const scoreDisplay = document.getElementById("scoreDisplay");
     gameOverScreen.style.display = "block";
     scoreDisplay.innerText = `Votre score : ${score.toFixed(1)}s`;
 
-    // Mettre en pause la musique de fond
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
 
-    // Cacher le bouton "Rejouer" au début
     document.getElementById("restartButton").style.display = "none";
 
-    // Ajouter un écouteur d'événement pour soumettre le score
     document.getElementById("submitScoreButton").onclick = submitScore;
 
-    // Ajouter un écouteur d'événement pour redémarrer le jeu
     document.getElementById("restartButton").onclick = function() {
         gameOverScreen.style.display = "none";
         startGame();
     };
 }
 
-// Fonction pour soumettre le score du joueur
+// Soumettre le score du joueur
 function submitScore() {
     const playerNameInput = document.getElementById("playerNameInput");
     const playerName = playerNameInput.value.trim();
     if (playerName !== '') {
         highScores.push({ name: playerName, score: score });
-        // Trier les meilleurs scores par ordre décroissant
         highScores.sort((a, b) => b.score - a.score);
-        // Conserver uniquement les 10 meilleurs scores
         highScores = highScores.slice(0, 10);
         saveHighScores();
         displayHighScores();
-        // Réinitialiser le champ d'entrée
         playerNameInput.value = '';
 
-        // Afficher le bouton "Rejouer"
         document.getElementById("restartButton").style.display = "block";
     } else {
         alert('Veuillez entrer votre nom.');
     }
 }
 
-// Fonction pour afficher les meilleurs scores
+// Afficher les meilleurs scores
 function displayHighScores() {
     const highScoreTable = document.getElementById("highScoreTable");
     const highScoresList = document.getElementById("highScoresList");
@@ -577,16 +557,13 @@ function updateObstacles() {
             continue;
         }
         if (detectCollision(rocket, obstacle)) {
-            // Gérer la perte d'une vie
             obstacles.splice(i, 1);
             lives -= 1;
 
-            // Jouer le son de collision
             collisionSound.currentTime = 0;
             collisionSound.play();
 
             if (lives <= 0) {
-                // Fin du jeu
                 score = elapsedTime / 10;
                 displayGameOver();
                 break;
@@ -595,12 +572,10 @@ function updateObstacles() {
     }
 }
 
-// Fonction pour démarrer ou réinitialiser le jeu
+// Démarrer ou réinitialiser le jeu
 function startGame() {
-    // Charger les meilleurs scores
     loadHighScores();
 
-    // Réinitialiser les variables du jeu
     rocket = { ...initialRocket };
     obstacles = [];
     stars = [];
@@ -615,42 +590,33 @@ function startGame() {
     lives = 3;
     bonusHeart = null;
 
-    // Générer les étoiles
     generateStars();
 
-    // Cacher l'écran de fin de jeu et le tableau des meilleurs scores
     document.getElementById("gameOverScreen").style.display = "none";
     document.getElementById("highScoreTable").style.display = "none";
 
-    // Afficher le canvas et cacher le bouton de démarrage
     canvas.style.display = "block";
     document.getElementById("startButton").style.display = "none";
 
-    // Démarrer la musique de fond
     backgroundMusic.currentTime = 0;
     backgroundMusic.play();
 
-    // Démarrer la boucle de jeu
     gameLoop();
 
-    // Augmenter la difficulté toutes les 20 secondes
     difficultyInterval = setInterval(increaseDifficulty, 20000);
 
-    // Démarrer la génération des obstacles
     startObstacleGeneration();
 
-    // Démarrer le timer
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         elapsedTime += 1;
-    }, 100); // Incrémente toutes les 100ms
+    }, 100);
 
-    // Générer un cœur bonus toutes les 40 secondes
     clearInterval(bonusHeartInterval);
     bonusHeartInterval = setInterval(generateBonusHeart, 40000);
 }
 
-// Appeler loadHighScores lorsque le script se charge
+// Charger les meilleurs scores au chargement du script
 loadHighScores();
 
 // Écouteur d'événement pour le bouton de démarrage
