@@ -273,8 +273,7 @@ function applyControls() {
 }
 
 // Gestion des événements tactiles
-let touchX = null;
-let touchY = null;
+let touchTarget = null;
 
 // Contrôles de la fusée via écran tactile
 canvas.addEventListener("touchstart", handleTouchStart, false);
@@ -283,22 +282,19 @@ canvas.addEventListener("touchend", handleTouchEnd, false);
 
 function handleTouchStart(e) {
     const touch = e.touches[0];
-    touchX = touch.clientX;
-    touchY = touch.clientY;
-    updateRocketVelocity(touchX, touchY);
+    touchTarget = { x: touch.clientX, y: touch.clientY };
+    updateRocketVelocity(touchTarget.x, touchTarget.y);
 }
 
 function handleTouchMove(e) {
     const touch = e.touches[0];
-    touchX = touch.clientX;
-    touchY = touch.clientY;
-    updateRocketVelocity(touchX, touchY);
+    touchTarget = { x: touch.clientX, y: touch.clientY };
+    updateRocketVelocity(touchTarget.x, touchTarget.y);
     e.preventDefault(); // Empêcher le défilement de la page
 }
 
 function handleTouchEnd(e) {
-    touchX = null;
-    touchY = null;
+    touchTarget = null;
 }
 
 function updateRocketVelocity(x, y) {
@@ -311,8 +307,9 @@ function updateRocketVelocity(x, y) {
     const angle = Math.atan2(deltaY, deltaX);
     const speed = rocket.acceleration;
 
-    rocket.dx += Math.cos(angle) * speed;
-    rocket.dy += Math.sin(angle) * speed;
+    // Définir la vitesse vers le point touché plutôt que d'ajouter
+    rocket.dx = Math.cos(angle) * speed;
+    rocket.dy = Math.sin(angle) * speed;
 }
 
 // Fonction principale de la boucle de jeu
