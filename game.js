@@ -9,7 +9,7 @@ canvas.height = window.innerHeight;
 // Variables globales
 let rocket = {
     x: canvas.width / 2 - 25,
-    y: canvas.height - 100,
+    y: canvas.height - 150,
     width: 50,
     height: 100,
     dx: 0,
@@ -222,14 +222,18 @@ function detectCollision(rocket, obstacle) {
 
 // Mettre à jour les obstacles
 function updateObstacles() {
-    obstacles.forEach((obstacle, index) => {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obstacle = obstacles[i];
         obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
-        if (obstacle.y > canvas.height) obstacles.splice(index, 1);
-        if (detectCollision(rocket, obstacle)) {
-            alert("Collision ! Game Over");
-            document.location.reload();
+        if (obstacle.y > canvas.height) {
+            obstacles.splice(i, 1);
+            continue;
         }
-    });
+        if (detectCollision(rocket, obstacle)) {
+            // Rediriger vers la page start_game77.html en cas de collision
+            window.location.href = "start_game77.html";
+        }
+    }
 }
 
 // Dessiner la fusée
