@@ -66,6 +66,9 @@ moonImage.src = "lune.png";
 const heartImage = new Image();
 heartImage.src = "coeur.png";
 
+// Charger le son de collision
+const collisionSound = new Audio('collision.mp3'); // Assure-toi que collision.mp3 est dans le même répertoire
+
 // Gérer le chargement des images
 let imagesLoaded = 0;
 const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, la planète, la lune et les cœurs
@@ -251,7 +254,7 @@ function detectCollision(rocket, obstacle) {
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // Définir le seuil de collision avec tolérance
-    const collisionThreshold = (rocket.width / 2) + (obstacle.size / 2) + 20; // 20 pixels de tolérance
+    const collisionThreshold = (rocket.width / 2) + (obstacle.size / 2) + 30; // Augmenté de 20 à 30 pixels de tolérance
 
     // Vérifier si la distance est inférieure au seuil
     return distance < collisionThreshold;
@@ -487,8 +490,8 @@ function startGame() {
     // Recommencer la boucle de jeu
     gameLoop();
 
-    // Augmenter la difficulté toutes les 10 secondes
-    difficultyInterval = setInterval(increaseDifficulty, 10000);
+    // Augmenter la difficulté toutes les 5 secondes (divisé par deux)
+    difficultyInterval = setInterval(increaseDifficulty, 5000); // Anciennement 10000ms
 
     // Générer des obstacles à intervalles réguliers
     obstacleInterval = setInterval(generateObstacle, 800);
@@ -514,6 +517,10 @@ function updateObstacles() {
             obstacles.splice(i, 1); // Retirer l'obstacle en collision
             lives -= 1;             // Perdre une vie
 
+            // Jouer le son de collision
+            collisionSound.currentTime = 0; // Remettre le son à zéro
+            collisionSound.play();
+
             if (lives <= 0) {
                 // Si aucune vie restante, arrêter le jeu et afficher le score
                 cancelAnimationFrame(animationFrameId);
@@ -531,6 +538,21 @@ function updateObstacles() {
             break; // Sortir de la boucle après gestion de la collision
         }
     }
+}
+
+// Fonction pour afficher le score et retourner au bouton "Start Game"
+function displayScore() {
+    // Dessiner le score une fois
+    drawScore();
+
+    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
+    setTimeout(() => {
+        showScore = false;
+        document.getElementById("startButton").style.display = "block";
+        canvas.style.display = "none";
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
+    }, 2000); // Affiche le score pendant 2 secondes
 }
 
 // Fonction pour réinitialiser le jeu (si nécessaire)
