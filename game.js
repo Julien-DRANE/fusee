@@ -6,7 +6,7 @@ const ctx = canvas.getContext("2d");
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 // Définir un facteur d'échelle pour les appareils mobiles
-const scaleFactor = isMobile ? 2 : 1;
+const scaleFactor = isMobile ? 3 : 2;
 
 // Dimensions du canvas
 canvas.width = window.innerWidth;
