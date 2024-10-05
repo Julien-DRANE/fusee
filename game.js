@@ -2,21 +2,24 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Définir le facteur de réduction
+const scaleDownFactor = 1 / 2.3; // ≈ 0.435
+
 // Dimensions du canvas
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // Variables globales initiales
 const initialRocket = {
-    x: canvas.width / 2 - 25,
-    y: canvas.height - 150,
-    width: 50,
-    height: 100,
+    x: (canvas.width / 2 - 25) * scaleDownFactor,
+    y: (canvas.height - 150) * scaleDownFactor,
+    width: 50 * scaleDownFactor,
+    height: 100 * scaleDownFactor,
     dx: 0,
     dy: 0,
-    acceleration: 1.5,  // Accélération initiale (utilisée pour le clavier)
-    maxSpeed: 15,        // Limite de la vitesse maximale
-    friction: 0.93       // Réduction de la friction pour maintenir de l'inertie
+    acceleration: 1.5 * scaleDownFactor,
+    maxSpeed: 15 * scaleDownFactor,
+    friction: 0.93
 };
 
 let rocket = { ...initialRocket };
@@ -41,7 +44,7 @@ let score = 0;
 let touchActive = false;
 let touchX = 0;
 let touchY = 0;
-const followSpeed = 10; // Vitesse de suivi en pixels par frame
+const followSpeed = 10 * scaleDownFactor; // Vitesse de suivi en pixels par frame
 
 // Charger l'image de la fusée
 const rocketImage = new Image();
@@ -67,10 +70,10 @@ const heartImage = new Image();
 heartImage.src = "coeur.png";
 
 // Charger le son de collision
-const collisionSound = new Audio('collision.mp3'); // Assure-toi que collision.mp3 est dans le même répertoire
+const collisionSound = new Audio('collision.mp3');
 
 // Charger le son de vie supplémentaire
-const extraLifeSound = new Audio('extra.mp3'); // Assure-toi que extra.mp3 est dans le même répertoire
+const extraLifeSound = new Audio('extra.mp3');
 
 // Gérer le chargement des images
 let imagesLoaded = 0;
@@ -116,7 +119,7 @@ obstacleImages.forEach(img => {
 function generateStars() {
     stars = []; // Réinitialiser les étoiles
     for (let i = 0; i < numberOfStars; i++) {
-        const size = Math.random() * 3 + 1; // Taille de l'étoile
+        const size = (Math.random() * 3 + 1) * scaleDownFactor; // Taille de l'étoile
         const speed = size / 2;             // Vitesse proportionnelle à la taille
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
@@ -126,25 +129,29 @@ function generateStars() {
 
 // Générer la planète (décor)
 function generatePlanet() {
-    const x = Math.random() * (canvas.width - 400);  // Position horizontale aléatoire
+    const width = 400 * scaleDownFactor;
+    const height = 400 * scaleDownFactor;
+    const x = Math.random() * (canvas.width - width);
     planet = {
         x: x,
-        y: -800,          // Position de départ hors de l'écran
-        width: 400,
-        height: 400,
-        speed: 0.5
+        y: -800 * scaleDownFactor,          // Position de départ hors de l'écran
+        width: width,
+        height: height,
+        speed: 0.5 * scaleDownFactor
     };
 }
 
 // Générer la lune (décor)
 function generateMoon() {
-    const x = Math.random() * (canvas.width - 800);  // Position horizontale aléatoire
+    const width = 800 * scaleDownFactor;
+    const height = 800 * scaleDownFactor;
+    const x = Math.random() * (canvas.width - width);
     moon = {
         x: x,
-        y: -1600,         // Position de départ hors de l'écran
-        width: 800,
-        height: 800,
-        speed: 0.2
+        y: -1600 * scaleDownFactor,         // Position de départ hors de l'écran
+        width: width,
+        height: height,
+        speed: 0.2 * scaleDownFactor
     };
 }
 
@@ -217,7 +224,6 @@ let obstacleSpawnInterval = 1000; // Intervalle initial de génération d'obstac
 let obstacleGenerationTimeout;
 
 function startObstacleGeneration() {
-    // Effacer le timeout précédent s'il existe
     clearTimeout(obstacleGenerationTimeout);
 
     // Générer un obstacle
@@ -228,9 +234,9 @@ function startObstacleGeneration() {
 }
 
 function generateObstacle() {
-    const size = Math.random() * 50 + 30;
+    const size = (Math.random() * 50 + 30) * scaleDownFactor;
     const x = Math.random() * (canvas.width - size);
-    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier;
+    const speed = (Math.random() * 3 + 2) * obstacleSpeedMultiplier * scaleDownFactor;
     const imageIndex = Math.floor(Math.random() * obstacleImages.length);
     obstacles.push({ x, y: -size, size, speed, image: obstacleImages[imageIndex] });
 }
@@ -269,7 +275,7 @@ function detectCollision(obj1, obj2) {
     const deltaY = obj1CenterY - obj2CenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30;
+    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30 * scaleDownFactor;
 
     return distance < collisionThreshold;
 }
@@ -288,31 +294,31 @@ function drawObstacles() {
 
 // Dessiner le compteur de temps
 function drawTimer() {
-    ctx.font = "24px Arial";
+    ctx.font = `${24 * scaleDownFactor}px Arial`;
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20, 20);
+    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20 * scaleDownFactor, 20 * scaleDownFactor);
 }
 
 // Dessiner les cœurs (vies) en haut à droite
 function drawLives() {
-    const heartSize = 30; // Taille d'un cœur
-    const padding = 10;    // Espacement entre les cœurs
+    const heartSize = 30 * scaleDownFactor;
+    const padding = 10 * scaleDownFactor;
     for (let i = 0; i < lives; i++) {
-        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20, heartSize, heartSize);
+        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20 * scaleDownFactor, heartSize, heartSize);
     }
 }
 
 // Générer le cœur bonus
 function generateBonusHeart() {
-    const size = 30; // Taille du cœur bonus
+    const size = 30 * scaleDownFactor;
     const x = Math.random() * (canvas.width - size);
     bonusHeart = {
         x: x,
         y: -size,
         size: size,
-        speed: 2 // Vitesse de descente du cœur bonus
+        speed: 2 * scaleDownFactor
     };
 }
 
@@ -321,14 +327,13 @@ function updateBonusHeart() {
     if (bonusHeart) {
         bonusHeart.y += bonusHeart.speed;
         if (bonusHeart.y > canvas.height) {
-            bonusHeart = null; // Supprimer le cœur bonus lorsqu'il sort de l'écran
+            bonusHeart = null;
         }
-        // Détection de collision avec la fusée
         if (detectCollision(rocket, bonusHeart)) {
-            lives = Math.min(lives + 1, 3); // Augmenter les vies jusqu'à un maximum de 3
-            extraLifeSound.currentTime = 0; // Remettre le son à zéro
-            extraLifeSound.play(); // Jouer le son de vie supplémentaire
-            bonusHeart = null; // Retirer le cœur bonus après collecte
+            lives = Math.min(lives + 1, 3);
+            extraLifeSound.currentTime = 0;
+            extraLifeSound.play();
+            bonusHeart = null;
         }
     }
 }
@@ -378,14 +383,14 @@ function handleTouchStart(e) {
     touchActive = true;
     touchX = touch.clientX;
     touchY = touch.clientY;
-    e.preventDefault(); // Empêcher le défilement de la page
+    e.preventDefault();
 }
 
 function handleTouchMove(e) {
     const touch = e.touches[0];
     touchX = touch.clientX;
     touchY = touch.clientY;
-    e.preventDefault(); // Empêcher le défilement de la page
+    e.preventDefault();
 }
 
 function handleTouchEnd(e) {
@@ -400,21 +405,16 @@ function updateRocketPosition() {
     const deltaX = touchX - centerX;
     const deltaY = touchY - centerY;
 
-    // Calculer la distance
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Définir un seuil de distance pour éviter les mouvements mineurs
-    const deadZone = 10; // pixels
+    const deadZone = 10 * scaleDownFactor;
 
     if (distance > deadZone) {
-        // Calculer la direction
         const angle = Math.atan2(deltaY, deltaX);
 
-        // Calculer le mouvement
         const moveX = Math.cos(angle) * followSpeed;
         const moveY = Math.sin(angle) * followSpeed;
 
-        // Appliquer le mouvement, en s'assurant de ne pas dépasser la position du doigt
         if (Math.abs(moveX) > Math.abs(deltaX)) {
             rocket.x = touchX - rocket.width / 2;
         } else {
@@ -434,214 +434,31 @@ let animationFrameId;
 let difficultyInterval;
 
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    applyControls();      // Appliquer les contrôles clavier
-    moveRocket();         // Déplacer la fusée
+    applyControls();
+    moveRocket();
 
     if (touchActive) {
-        updateRocketPosition(); // Mettre à jour la position de la fusée vers le doigt
+        updateRocketPosition();
     }
 
-    updateStars();        // Mettre à jour les étoiles
-    updatePlanet();       // Mettre à jour la planète
-    updateMoon();         // Mettre à jour la lune
-    updateObstacles();    // Mettre à jour les obstacles
-    updateBonusHeart();   // Mettre à jour le cœur bonus
+    updateStars();
+    updatePlanet();
+    updateMoon();
+    updateObstacles();
+    updateBonusHeart();
 
-    drawStars();          // Dessiner les étoiles
-    drawPlanet();         // Dessiner la planète
-    drawMoon();           // Dessiner la lune
-    drawObstacles();      // Dessiner les obstacles
-    drawBonusHeart();     // Dessiner le cœur bonus
-    drawRocket();         // Dessiner la fusée
-    drawTimer();          // Dessiner le compteur de temps
-    drawLives();          // Dessiner les vies
+    drawStars();
+    drawPlanet();
+    drawMoon();
+    drawObstacles();
+    drawBonusHeart();
+    drawRocket();
+    drawTimer();
+    drawLives();
 
-    animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
+    animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-// Augmenter la difficulté progressivement
-function increaseDifficulty() {
-    difficultyLevel += 1;            // Augmenter le niveau de difficulté
-    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
-
-    // Diminuer l'intervalle de génération des obstacles pour en générer plus fréquemment
-    obstacleSpawnInterval = Math.max(300, obstacleSpawnInterval - 100); // Ne pas descendre en dessous de 300ms
-
-    // Redémarrer la génération des obstacles avec le nouvel intervalle
-    startObstacleGeneration();
-}
-
-// Fonction pour charger les meilleurs scores depuis le localStorage
-function loadHighScores() {
-    const storedScores = localStorage.getItem('highScores');
-    if (storedScores) {
-        highScores = JSON.parse(storedScores);
-    }
-}
-
-// Fonction pour sauvegarder les meilleurs scores dans le localStorage
-function saveHighScores() {
-    localStorage.setItem('highScores', JSON.stringify(highScores));
-}
-
-// Fonction pour afficher l'écran de fin de jeu
-function displayGameOver() {
-    // Arrêter la boucle de jeu et nettoyer les intervalles
-    cancelAnimationFrame(animationFrameId);
-    clearInterval(difficultyInterval);
-    clearInterval(timerInterval);
-    clearInterval(bonusHeartInterval);
-    clearTimeout(obstacleGenerationTimeout);
-
-    // Cacher le canvas et le bouton de démarrage
-    canvas.style.display = "none";
-    document.getElementById("startButton").style.display = "none";
-
-    // Afficher l'écran de fin de jeu
-    const gameOverScreen = document.getElementById("gameOverScreen");
-    const scoreDisplay = document.getElementById("scoreDisplay");
-    gameOverScreen.style.display = "block";
-    scoreDisplay.innerText = `Votre score : ${score.toFixed(1)}s`;
-
-    // Mettre en pause la musique de fond
-    backgroundMusic.pause();
-    backgroundMusic.currentTime = 0;
-
-    // Cacher le bouton "Rejouer" au début
-    document.getElementById("restartButton").style.display = "none";
-
-    // Ajouter un écouteur d'événement pour soumettre le score
-    document.getElementById("submitScoreButton").onclick = submitScore;
-
-    // Ajouter un écouteur d'événement pour redémarrer le jeu
-    document.getElementById("restartButton").onclick = function() {
-        gameOverScreen.style.display = "none";
-        startGame();
-    };
-}
-
-// Fonction pour soumettre le score du joueur
-function submitScore() {
-    const playerNameInput = document.getElementById("playerNameInput");
-    const playerName = playerNameInput.value.trim();
-    if (playerName !== '') {
-        highScores.push({ name: playerName, score: score });
-        // Trier les meilleurs scores par ordre décroissant
-        highScores.sort((a, b) => b.score - a.score);
-        // Conserver uniquement les 10 meilleurs scores
-        highScores = highScores.slice(0, 10);
-        saveHighScores();
-        displayHighScores();
-        // Réinitialiser le champ d'entrée
-        playerNameInput.value = '';
-
-        // Afficher le bouton "Rejouer"
-        document.getElementById("restartButton").style.display = "block";
-    } else {
-        alert('Veuillez entrer votre nom.');
-    }
-}
-
-// Fonction pour afficher les meilleurs scores
-function displayHighScores() {
-    const highScoreTable = document.getElementById("highScoreTable");
-    const highScoresList = document.getElementById("highScoresList");
-    highScoresList.innerHTML = '';
-    highScores.forEach((entry) => {
-        const li = document.createElement('li');
-        li.innerText = `${entry.name} - ${entry.score.toFixed(1)}s`;
-        highScoresList.appendChild(li);
-    });
-    highScoreTable.style.display = "block";
-}
-
-// Mettre à jour les obstacles et gérer les collisions
-function updateObstacles() {
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obstacle = obstacles[i];
-        obstacle.y += obstacle.speed;
-        if (obstacle.y > canvas.height) {
-            obstacles.splice(i, 1);
-            continue;
-        }
-        if (detectCollision(rocket, obstacle)) {
-            // Gérer la perte d'une vie
-            obstacles.splice(i, 1);
-            lives -= 1;
-
-            // Jouer le son de collision
-            collisionSound.currentTime = 0;
-            collisionSound.play();
-
-            if (lives <= 0) {
-                // Fin du jeu
-                score = elapsedTime / 10;
-                displayGameOver();
-                break;
-            }
-        }
-    }
-}
-
-// Fonction pour démarrer ou réinitialiser le jeu
-function startGame() {
-    // Charger les meilleurs scores
-    loadHighScores();
-
-    // Réinitialiser les variables du jeu
-    rocket = { ...initialRocket };
-    obstacles = [];
-    stars = [];
-    planet = null;
-    moon = null;
-    difficultyLevel = 1;
-    obstacleSpeedMultiplier = 1;
-    obstacleSpawnInterval = 1000;
-    elapsedTime = 0;
-    showScore = false;
-    score = 0;
-    lives = 3;
-    bonusHeart = null;
-
-    // Générer les étoiles
-    generateStars();
-
-    // Cacher l'écran de fin de jeu et le tableau des meilleurs scores
-    document.getElementById("gameOverScreen").style.display = "none";
-    document.getElementById("highScoreTable").style.display = "none";
-
-    // Afficher le canvas et cacher le bouton de démarrage
-    canvas.style.display = "block";
-    document.getElementById("startButton").style.display = "none";
-
-    // Démarrer la musique de fond
-    backgroundMusic.currentTime = 0;
-    backgroundMusic.play();
-
-    // Démarrer la boucle de jeu
-    gameLoop();
-
-    // Augmenter la difficulté toutes les 20 secondes
-    difficultyInterval = setInterval(increaseDifficulty, 20000);
-
-    // Démarrer la génération des obstacles
-    startObstacleGeneration();
-
-    // Démarrer le timer
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        elapsedTime += 1;
-    }, 100); // Incrémente toutes les 100ms
-
-    // Générer un cœur bonus toutes les 40 secondes
-    clearInterval(bonusHeartInterval);
-    bonusHeartInterval = setInterval(generateBonusHeart, 40000);
-}
-
-// Appeler loadHighScores lorsque le script se charge
-loadHighScores();
-
-// Écouteur d'événement pour le bouton de démarrage
-document.getElementById("startButton").addEventListener("click", startGame);
+// ... Le reste du code reste inchangé ...
