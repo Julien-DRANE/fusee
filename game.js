@@ -62,9 +62,16 @@ planetImage.src = "planet.png";
 const moonImage = new Image();
 moonImage.src = "lune.png";
 
+// Charger l'image des cœurs pour les vies
+const heartImage = new Image();
+heartImage.src = "coeur.png";
+
 // Gérer le chargement des images
 let imagesLoaded = 0;
-const totalImages = obstacleImages.length + 3; // Inclure l'image de la fusée, la planète et la lune
+const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, la planète, la lune et les cœurs
+
+// Variables de vies
+let lives = 3; // Nombre initial de vies
 
 // Vérifier le chargement des images et démarrer le jeu
 function imageLoaded() {
@@ -78,7 +85,8 @@ function imageLoaded() {
 rocketImage.onload = imageLoaded;
 planetImage.onload = imageLoaded;
 moonImage.onload = imageLoaded;
-rocketImage.onerror = planetImage.onerror = moonImage.onerror = function () {
+heartImage.onload = imageLoaded;
+rocketImage.onerror = planetImage.onerror = moonImage.onerror = heartImage.onerror = function () {
     console.error("Erreur de chargement de l'image.");
     alert("Erreur de chargement de l'image.");
 };
@@ -249,75 +257,6 @@ function detectCollision(rocket, obstacle) {
     return distance < collisionThreshold;
 }
 
-// Fonction pour réinitialiser le jeu
-function resetGame() {
-    // Réinitialiser les variables du jeu
-    rocket = { ...initialRocket };
-    obstacles = [];
-    stars = [];
-    planet = null;
-    moon = null;
-    difficultyLevel = 1;
-    obstacleSpeedMultiplier = 1;
-    elapsedTime = 0;
-    showScore = false;
-    score = 0;
-
-    // Générer à nouveau les étoiles
-    generateStars();
-
-    // Remettre le canvas visible et le bouton de démarrage caché
-    document.getElementById("startButton").style.display = "none";
-    canvas.style.display = "block";
-
-    // Démarrer la musique de fond
-    backgroundMusic.currentTime = 0;
-    backgroundMusic.play();
-
-    // Recommencer la boucle de jeu
-    gameLoop();
-
-    // Réinitialiser l'intervalle de difficulté
-    clearInterval(difficultyInterval);
-    difficultyInterval = setInterval(increaseDifficulty, 10000);
-
-    // Générer des obstacles à intervalles réguliers
-    clearInterval(obstacleInterval);
-    obstacleInterval = setInterval(generateObstacle, 800);
-
-    // Réinitialiser le timer
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        elapsedTime += 1;
-    }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
-}
-
-// Mettre à jour les obstacles et gérer les collisions
-function updateObstacles() {
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obstacle = obstacles[i];
-        obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
-        if (obstacle.y > canvas.height) {
-            obstacles.splice(i, 1);
-            continue;
-        }
-        if (detectCollision(rocket, obstacle)) {
-            // Arrêter toutes les boucles et réinitialiser le jeu après un court délai pour afficher le score
-            cancelAnimationFrame(animationFrameId);
-            clearInterval(obstacleInterval);
-            clearInterval(difficultyInterval);
-            clearInterval(timerInterval);
-            showScore = true;
-            score = elapsedTime / 10; // Convertir en secondes avec une décimale
-            setTimeout(() => {
-                // Afficher la bulle verte avec le score
-                displayScore();
-            }, 100); // Légère pause avant d'afficher le score
-            break; // Sortir de la boucle après réinitialisation
-        }
-    }
-}
-
 // Dessiner la fusée
 function drawRocket() {
     ctx.drawImage(rocketImage, rocket.x, rocket.y, rocket.width, rocket.height);
@@ -337,6 +276,15 @@ function drawTimer() {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20, 20);
+}
+
+// Dessiner les cœurs (vies) en haut à droite
+function drawLives() {
+    const heartSize = 30; // Taille d'un cœur
+    const padding = 10;    // Espacement entre les cœurs
+    for (let i = 0; i < lives; i++) {
+        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20, heartSize, heartSize);
+    }
 }
 
 // Dessiner le score dans une bulle verte
@@ -490,6 +438,7 @@ function gameLoop() {
     drawObstacles();      // Dessiner les obstacles
     drawRocket();         // Dessiner la fusée
     drawTimer();          // Dessiner le compteur de temps
+    drawLives();          // Dessiner les vies
 
     if (showScore) {
         drawScore();      // Dessiner le score si nécessaire
@@ -522,6 +471,7 @@ function startGame() {
     elapsedTime = 0;
     showScore = false;
     score = 0;
+    lives = 3; // Réinitialiser les vies
 
     // Générer à nouveau les étoiles
     generateStars();
@@ -534,7 +484,243 @@ function startGame() {
     backgroundMusic.currentTime = 0;
     backgroundMusic.play();
 
-    // Commencer la boucle de jeu
+    // Recommencer la boucle de jeu
+    gameLoop();
+
+    // Augmenter la difficulté toutes les 10 secondes
+    difficultyInterval = setInterval(increaseDifficulty, 10000);
+
+    // Générer des obstacles à intervalles réguliers
+    obstacleInterval = setInterval(generateObstacle, 800);
+
+    // Démarrer le timer
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        elapsedTime += 1;
+    }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
+}
+
+// Mettre à jour les obstacles et gérer les collisions
+function updateObstacles() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obstacle = obstacles[i];
+        obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
+        if (obstacle.y > canvas.height) {
+            obstacles.splice(i, 1);
+            continue;
+        }
+        if (detectCollision(rocket, obstacle)) {
+            // Gérer la perte d'une vie
+            obstacles.splice(i, 1); // Retirer l'obstacle en collision
+            lives -= 1;             // Perdre une vie
+
+            if (lives <= 0) {
+                // Si aucune vie restante, arrêter le jeu et afficher le score
+                cancelAnimationFrame(animationFrameId);
+                clearInterval(obstacleInterval);
+                clearInterval(difficultyInterval);
+                clearInterval(timerInterval);
+                showScore = true;
+                score = elapsedTime / 10; // Convertir en secondes avec une décimale
+                setTimeout(() => {
+                    // Afficher la bulle verte avec le score
+                    displayScore();
+                }, 100); // Légère pause avant d'afficher le score
+            }
+
+            break; // Sortir de la boucle après gestion de la collision
+        }
+    }
+}
+
+// Dessiner les cœurs (vies) en haut à droite
+function drawLives() {
+    const heartSize = 30; // Taille d'un cœur
+    const padding = 10;    // Espacement entre les cœurs
+    for (let i = 0; i < lives; i++) {
+        ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20, heartSize, heartSize);
+    }
+}
+
+// Fonction pour afficher le score et retourner au bouton "Start Game"
+function displayScore() {
+    // Dessiner le score une fois
+    drawScore();
+
+    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
+    setTimeout(() => {
+        showScore = false;
+        document.getElementById("startButton").style.display = "block";
+        canvas.style.display = "none";
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
+    }, 2000); // Affiche le score pendant 2 secondes
+}
+
+// Fonction pour réinitialiser le jeu (si nécessaire)
+function resetGame() {
+    // Cette fonction est maintenant intégrée dans 'startGame' et 'displayScore'
+    // Vous pouvez l'utiliser pour d'autres réinitialisations si nécessaire
+}
+
+// Gestion des touches pressées
+const keysPressed = {};
+
+// Contrôles de la fusée via clavier
+document.addEventListener("keydown", e => {
+    keysPressed[e.key] = true;
+});
+
+document.addEventListener("keyup", e => {
+    keysPressed[e.key] = false;
+});
+
+// Appliquer les contrôles clavier à la fusée
+function applyControls() {
+    if (keysPressed["ArrowLeft"]) {
+        rocket.dx -= rocket.acceleration;
+    }
+    if (keysPressed["ArrowRight"]) {
+        rocket.dx += rocket.acceleration;
+    }
+    if (keysPressed["ArrowUp"]) {
+        rocket.dy -= rocket.acceleration;
+    }
+    if (keysPressed["ArrowDown"]) {
+        rocket.dy += rocket.acceleration;
+    }
+}
+
+// Gestion des événements tactiles
+canvas.addEventListener("touchstart", handleTouchStart, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+canvas.addEventListener("touchend", handleTouchEnd, false);
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchActive = true;
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+    e.preventDefault(); // Empêcher le défilement de la page
+}
+
+function handleTouchMove(e) {
+    const touch = e.touches[0];
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+    e.preventDefault(); // Empêcher le défilement de la page
+}
+
+function handleTouchEnd(e) {
+    touchActive = false;
+}
+
+// Fonction pour mettre à jour la position de la fusée vers le doigt
+function updateRocketPosition() {
+    const centerX = rocket.x + rocket.width / 2;
+    const centerY = rocket.y + rocket.height / 2;
+
+    const deltaX = touchX - centerX;
+    const deltaY = touchY - centerY;
+
+    // Calculer la distance
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    // Définir un seuil de distance pour éviter les mouvements mineurs
+    const deadZone = 10; // pixels
+
+    if (distance > deadZone) {
+        // Calculer la direction
+        const angle = Math.atan2(deltaY, deltaX);
+
+        // Calculer le mouvement
+        const moveX = Math.cos(angle) * followSpeed;
+        const moveY = Math.sin(angle) * followSpeed;
+
+        // Appliquer le mouvement, en s'assurant de ne pas dépasser la position du doigt
+        if (Math.abs(moveX) > Math.abs(deltaX)) {
+            rocket.x = touchX - rocket.width / 2;
+        } else {
+            rocket.x += moveX;
+        }
+
+        if (Math.abs(moveY) > Math.abs(deltaY)) {
+            rocket.y = touchY - rocket.height / 2;
+        } else {
+            rocket.y += moveY;
+        }
+    }
+}
+
+// Fonction principale de la boucle de jeu
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+
+    applyControls();      // Appliquer les contrôles clavier
+    moveRocket();         // Déplacer la fusée
+
+    if (touchActive) {
+        updateRocketPosition(); // Mettre à jour la position de la fusée vers le doigt
+    }
+
+    updateStars();        // Mettre à jour les étoiles
+    updatePlanet();       // Mettre à jour la planète
+    updateMoon();         // Mettre à jour la lune
+    updateObstacles();    // Mettre à jour les obstacles
+
+    drawStars();          // Dessiner les étoiles
+    drawPlanet();         // Dessiner la planète
+    drawMoon();           // Dessiner la lune
+    drawObstacles();      // Dessiner les obstacles
+    drawRocket();         // Dessiner la fusée
+    drawTimer();          // Dessiner le compteur de temps
+    drawLives();          // Dessiner les vies
+
+    if (showScore) {
+        drawScore();      // Dessiner le score si nécessaire
+    }
+
+    animationFrameId = requestAnimationFrame(gameLoop); // Demander la prochaine frame
+}
+
+// Augmenter la difficulté progressivement
+function increaseDifficulty() {
+    difficultyLevel += 1;            // Augmenter le niveau de difficulté
+    obstacleSpeedMultiplier += 0.2;  // Augmenter la vitesse des obstacles
+
+    // Ajouter plus d'obstacles
+    for (let i = 0; i < difficultyLevel; i++) {
+        generateObstacle();
+    }
+}
+
+// Fonction pour démarrer ou réinitialiser le jeu
+function startGame() {
+    // Réinitialiser les variables du jeu
+    rocket = { ...initialRocket };
+    obstacles = [];
+    stars = [];
+    planet = null;
+    moon = null;
+    difficultyLevel = 1;
+    obstacleSpeedMultiplier = 1;
+    elapsedTime = 0;
+    showScore = false;
+    score = 0;
+    lives = 3; // Réinitialiser les vies
+
+    // Générer à nouveau les étoiles
+    generateStars();
+
+    // Remettre le canvas visible et le bouton de démarrage caché
+    document.getElementById("startButton").style.display = "none";
+    canvas.style.display = "block";
+
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
+
+    // Recommencer la boucle de jeu
     gameLoop();
 
     // Augmenter la difficulté toutes les 10 secondes
@@ -556,5 +742,5 @@ function resetGame() {
     // Vous pouvez l'utiliser pour d'autres réinitialisations si nécessaire
 }
 
-// Fonction pour afficher le score et retourner au bouton "Start Game"
+// Événement pour démarrer le jeu
 document.getElementById("startButton").addEventListener("click", startGame);
