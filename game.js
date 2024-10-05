@@ -344,12 +344,24 @@ function updateRocketVelocity(x, y) {
     const deltaX = x - centerX;
     const deltaY = y - centerY;
 
-    const angle = Math.atan2(deltaY, deltaX);
-    const speed = 5; // Augmenter la vitesse pour une meilleure réactivité
+    // Calculer la distance
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Définir la vitesse directement vers la direction du toucher
-    rocket.dx = Math.cos(angle) * speed;
-    rocket.dy = Math.sin(angle) * speed;
+    // Définir un seuil de distance pour éviter les mouvements mineurs
+    const deadZone = 20; // pixels
+
+    if (distance > deadZone) {
+        const angle = Math.atan2(deltaY, deltaX);
+        const speed = 5; // Augmenter la vitesse pour une meilleure réactivité
+
+        // Définir la vitesse directement vers la direction du toucher
+        rocket.dx = Math.cos(angle) * speed;
+        rocket.dy = Math.sin(angle) * speed;
+    } else {
+        // Si dans la zone morte, réduire la vitesse ou la mettre à zéro
+        rocket.dx = 0;
+        rocket.dy = 0;
+    }
 }
 
 // Fonction principale de la boucle de jeu
@@ -387,17 +399,98 @@ function increaseDifficulty() {
     }
 }
 
-// Démarrer le jeu après clic sur le bouton
-document.getElementById("startButton").addEventListener("click", () => {
+// Fonction pour démarrer ou réinitialiser le jeu
+function startGame() {
+    // Réinitialiser les variables du jeu
+    rocket = { ...initialRocket };
+    obstacles = [];
+    stars = [];
+    planet = null;
+    moon = null;
+    difficultyLevel = 1;
+    obstacleSpeedMultiplier = 1;
+
+    // Générer à nouveau les étoiles
+    generateStars();
+
+    // Remettre le canvas visible et le bouton de démarrage caché
     document.getElementById("startButton").style.display = "none";
     canvas.style.display = "block";
+
+    // Démarrer la musique de fond
     backgroundMusic.play();
-    generateStars();    // Générer les étoiles avant de commencer
-    gameLoop();         // Lancer la boucle de jeu
+
+    // Commencer la boucle de jeu
+    gameLoop();
 
     // Augmenter la difficulté toutes les 10 secondes
     difficultyInterval = setInterval(increaseDifficulty, 10000);
 
     // Générer des obstacles à intervalles réguliers
     obstacleInterval = setInterval(generateObstacle, 800);
-});
+}
+
+// Mettre à jour les obstacles et gérer les collisions
+function updateObstacles() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obstacle = obstacles[i];
+        obstacle.y += obstacle.speed; // Appliquer la vitesse augmentée
+        if (obstacle.y > canvas.height) {
+            obstacles.splice(i, 1);
+            continue;
+        }
+        if (detectCollision(rocket, obstacle)) {
+            // Arrêter toutes les boucles et réinitialiser le jeu
+            cancelAnimationFrame(animationFrameId);
+            clearInterval(obstacleInterval);
+            clearInterval(difficultyInterval);
+            resetGame();
+            break; // Sortir de la boucle après réinitialisation
+        }
+    }
+}
+
+// Dessiner la fusée
+function drawRocket() {
+    ctx.drawImage(rocketImage, rocket.x, rocket.y, rocket.width, rocket.height);
+}
+
+// Dessiner les obstacles
+function drawObstacles() {
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+    });
+}
+
+// Fonction pour réinitialiser le jeu
+function resetGame() {
+    // Réinitialiser les variables du jeu
+    rocket = { ...initialRocket };
+    obstacles = [];
+    stars = [];
+    planet = null;
+    moon = null;
+    difficultyLevel = 1;
+    obstacleSpeedMultiplier = 1;
+
+    // Générer à nouveau les étoiles
+    generateStars();
+
+    // Remettre le canvas visible et le bouton de démarrage caché
+    document.getElementById("startButton").style.display = "none";
+    canvas.style.display = "block";
+
+    // Recommencer la boucle de jeu
+    gameLoop();
+
+    // Réinitialiser l'intervalle de difficulté
+    clearInterval(difficultyInterval);
+    difficultyInterval = setInterval(increaseDifficulty, 10000);
+
+    // Générer des obstacles à intervalles réguliers
+    clearInterval(obstacleInterval);
+    obstacleInterval = setInterval(generateObstacle, 800);
+}
+
+// Démarrer le jeu après clic sur le bouton
+document.getElementById("startButton").addEventListener("click", startGame);
