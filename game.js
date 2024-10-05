@@ -33,9 +33,15 @@ let obstacleSpeedMultiplier = 1; // Multiplicateur de vitesse des obstacles
 let elapsedTime = 0; // En dixièmes de seconde
 let timerInterval;
 
-// Variable pour afficher le score
+// Variables pour afficher le score
 let showScore = false;
 let score = 0;
+
+// Variables pour le suivi tactile
+let touchActive = false;
+let touchX = 0;
+let touchY = 0;
+const followSpeed = 5; // Vitesse de suivi en pixels par frame
 
 // Charger l'image de la fusée
 const rocketImage = new Image();
@@ -198,18 +204,21 @@ function generateObstacle() {
 
 // Déplacer la fusée avec inertie
 function moveRocket() {
-    rocket.x += rocket.dx;
-    rocket.y += rocket.dy;
+    if (!touchActive) {
+        // Appliquer la friction pour ralentir progressivement la fusée
+        rocket.dx *= rocket.friction;
+        rocket.dy *= rocket.friction;
 
-    // Appliquer la friction pour ralentir progressivement la fusée
-    rocket.dx *= rocket.friction;
-    rocket.dy *= rocket.friction;
+        // Limiter la vitesse maximale de la fusée
+        if (rocket.dx > rocket.maxSpeed) rocket.dx = rocket.maxSpeed;
+        if (rocket.dx < -rocket.maxSpeed) rocket.dx = -rocket.maxSpeed;
+        if (rocket.dy > rocket.maxSpeed) rocket.dy = rocket.maxSpeed;
+        if (rocket.dy < -rocket.maxSpeed) rocket.dy = -rocket.maxSpeed;
 
-    // Limiter la vitesse maximale de la fusée
-    if (rocket.dx > rocket.maxSpeed) rocket.dx = rocket.maxSpeed;
-    if (rocket.dx < -rocket.maxSpeed) rocket.dx = -rocket.maxSpeed;
-    if (rocket.dy > rocket.maxSpeed) rocket.dy = rocket.maxSpeed;
-    if (rocket.dy < -rocket.maxSpeed) rocket.dy = -rocket.maxSpeed;
+        // Déplacer la fusée selon la vitesse
+        rocket.x += rocket.dx;
+        rocket.y += rocket.dy;
+    }
 
     // Empêcher la fusée de sortir du canvas horizontalement
     if (rocket.x < 0) rocket.x = 0;
@@ -317,7 +326,7 @@ function drawTimer() {
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(`Time: ${ (elapsedTime / 10).toFixed(1) }s`, 20, 20);
+    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20, 20);
 }
 
 // Dessiner le score dans une bulle verte
@@ -351,6 +360,8 @@ function displayScore() {
         showScore = false;
         document.getElementById("startButton").style.display = "block";
         canvas.style.display = "none";
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
     }, 2000); // Affiche le score pendant 2 secondes
 }
 
@@ -383,54 +394,63 @@ function applyControls() {
 }
 
 // Gestion des événements tactiles
-let touchTarget = null;
-
-// Contrôles de la fusée via écran tactile
 canvas.addEventListener("touchstart", handleTouchStart, false);
 canvas.addEventListener("touchmove", handleTouchMove, false);
 canvas.addEventListener("touchend", handleTouchEnd, false);
 
 function handleTouchStart(e) {
     const touch = e.touches[0];
-    touchTarget = { x: touch.clientX, y: touch.clientY };
-    updateRocketVelocity(touchTarget.x, touchTarget.y);
+    touchActive = true;
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+    e.preventDefault(); // Empêcher le défilement de la page
 }
 
 function handleTouchMove(e) {
     const touch = e.touches[0];
-    touchTarget = { x: touch.clientX, y: touch.clientY };
-    updateRocketVelocity(touchTarget.x, touchTarget.y);
+    touchX = touch.clientX;
+    touchY = touch.clientY;
     e.preventDefault(); // Empêcher le défilement de la page
 }
 
 function handleTouchEnd(e) {
-    touchTarget = null;
+    touchActive = false;
 }
 
-function updateRocketVelocity(x, y) {
+// Fonction pour mettre à jour la position de la fusée vers le doigt
+function updateRocketPosition() {
     const centerX = rocket.x + rocket.width / 2;
     const centerY = rocket.y + rocket.height / 2;
 
-    const deltaX = x - centerX;
-    const deltaY = y - centerY;
+    const deltaX = touchX - centerX;
+    const deltaY = touchY - centerY;
 
     // Calculer la distance
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // Définir un seuil de distance pour éviter les mouvements mineurs
-    const deadZone = 20; // pixels
+    const deadZone = 10; // pixels
 
     if (distance > deadZone) {
+        // Calculer la direction
         const angle = Math.atan2(deltaY, deltaX);
-        const speed = 5; // Augmenter la vitesse pour une meilleure réactivité
 
-        // Définir la vitesse directement vers la direction du toucher
-        rocket.dx = Math.cos(angle) * speed;
-        rocket.dy = Math.sin(angle) * speed;
-    } else {
-        // Si dans la zone morte, réduire la vitesse ou la mettre à zéro
-        rocket.dx = 0;
-        rocket.dy = 0;
+        // Calculer le mouvement
+        const moveX = Math.cos(angle) * followSpeed;
+        const moveY = Math.sin(angle) * followSpeed;
+
+        // Appliquer le mouvement, en s'assurant de ne pas dépasser la position du doigt
+        if (Math.abs(moveX) > Math.abs(deltaX)) {
+            rocket.x = touchX - rocket.width / 2;
+        } else {
+            rocket.x += moveX;
+        }
+
+        if (Math.abs(moveY) > Math.abs(deltaY)) {
+            rocket.y = touchY - rocket.height / 2;
+        } else {
+            rocket.y += moveY;
+        }
     }
 }
 
@@ -444,6 +464,11 @@ function gameLoop() {
 
     applyControls();      // Appliquer les contrôles clavier
     moveRocket();         // Déplacer la fusée
+
+    if (touchActive) {
+        updateRocketPosition(); // Mettre à jour la position de la fusée vers le doigt
+    }
+
     updateStars();        // Mettre à jour les étoiles
     updatePlanet();       // Mettre à jour la planète
     updateMoon();         // Mettre à jour la lune
@@ -509,6 +534,7 @@ function startGame() {
     obstacleInterval = setInterval(generateObstacle, 800);
 
     // Démarrer le timer
+    clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         elapsedTime += 1;
     }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
@@ -538,6 +564,27 @@ function updateObstacles() {
             break; // Sortir de la boucle après réinitialisation
         }
     }
+}
+
+// Dessiner la fusée
+function drawRocket() {
+    ctx.drawImage(rocketImage, rocket.x, rocket.y, rocket.width, rocket.height);
+}
+
+// Dessiner les obstacles
+function drawObstacles() {
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+    });
+}
+
+// Dessiner le compteur de temps
+function drawTimer() {
+    ctx.font = "24px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Time: ${(elapsedTime / 10).toFixed(1)}s`, 20, 20);
 }
 
 // Dessiner le score dans une bulle verte
@@ -576,5 +623,17 @@ function displayScore() {
     }, 2000); // Affiche le score pendant 2 secondes
 }
 
-// Fonction pour démarrer ou réinitialiser le jeu
-document.getElementById("startButton").addEventListener("click", startGame);
+// Gestion des touches pressées
+const keysPressed = {};
+
+// Contrôles de la fusée via clavier
+document.addEventListener("keydown", e => {
+    keysPressed[e.key] = true;
+});
+
+document.addEventListener("keyup", e => {
+    keysPressed[e.key] = false;
+});
+
+// Appliquer les contrôles clavier à la fusée
+function applyControls
