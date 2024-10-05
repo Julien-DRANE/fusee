@@ -360,7 +360,7 @@ function updateRocketPosition() {
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // Définir un seuil de distance pour éviter les mouvements mineurs
-    const deadZone = 10; // pixels
+    const deadZone = 5; // pixels
 
     if (distance > deadZone) {
         // Calculer la direction
@@ -459,7 +459,7 @@ function startGame() {
     gameLoop();
 
     // Augmenter la difficulté toutes les 10 secondes
-    difficultyInterval = setInterval(increaseDifficulty, 10000);
+    difficultyInterval = setInterval(increaseDifficulty, 20000);
 
     // Générer des obstacles à intervalles réguliers
     obstacleInterval = setInterval(generateObstacle, 800);
