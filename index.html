@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Colorful Rocket Game</title>
-    <!-- Empêcher le zoom sur les appareils mobiles -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Balise meta viewport ajustée -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Styles globaux */
         body, html {
@@ -12,7 +12,7 @@
             padding: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            height: 100%; /* Pour que le fond couvre toute la hauteur */
+            height: 100%;
         }
         /* Fond de la page avant le jeu */
         #menuBackground {
@@ -23,15 +23,15 @@
             height: 100%;
             background: url('menu.png') no-repeat center center;
             background-size: cover;
-            z-index: -1; /* Pour que le fond soit derrière les boutons */
+            z-index: -1;
         }
         /* Style du canvas */
         canvas {
-            display: none; /* Cacher le canvas jusqu'au démarrage */
+            display: none;
             background: #000;
-            width: 100vw; /* Prendre toute la largeur de la fenêtre */
-            height: 100vh; /* Prendre toute la hauteur de la fenêtre */
-            position: absolute; /* Superposer le canvas correctement */
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
             top: 0;
             left: 0;
         }
@@ -97,19 +97,19 @@
         #highScoreTable {
             display: none;
             position: absolute;
-            top: 5%; /* Ajusté pour s'adapter à la nouvelle taille */
-            right: 5%; /* Ajusté pour s'adapter à la nouvelle taille */
+            top: 5%;
+            right: 5%;
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 45px; /* Multiplié par 3 */
-            border-radius: 30px; /* Multiplié par 3 */
+            padding: 45px;
+            border-radius: 30px;
             color: #000;
-            max-width: 600px; /* Multiplié par 3 */
+            max-width: 600px;
             z-index: 1;
         }
         #highScoreTable h2 {
             margin-top: 0;
             text-align: center;
-            font-size: 72px; /* Multiplié par 3 */
+            font-size: 72px;
         }
         #highScoresList {
             list-style: none;
@@ -117,8 +117,8 @@
             margin: 0;
         }
         #highScoresList li {
-            margin: 15px 0; /* Multiplié par 3 */
-            font-size: 54px; /* Multiplié par 3 */
+            margin: 15px 0;
+            font-size: 54px;
         }
     </style>
 </head>
