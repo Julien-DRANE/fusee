@@ -76,6 +76,10 @@ const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, 
 // Variables de vies
 let lives = 3; // Nombre initial de vies
 
+// Variables pour le cœur bonus
+let bonusHeart = null;
+let bonusHeartInterval;
+
 // Vérifier le chargement des images et démarrer le jeu
 function imageLoaded() {
     imagesLoaded++;
@@ -241,20 +245,23 @@ function moveRocket() {
 }
 
 // Gérer les collisions avec tolérance
-function detectCollision(rocket, obstacle) {
+function detectCollision(obj1, obj2) {
+    // Vérifier si obj2 existe (pour éviter les erreurs avec le cœur bonus)
+    if (!obj2) return false;
+
     // Calculer les centres
-    const rocketCenterX = rocket.x + rocket.width / 2;
-    const rocketCenterY = rocket.y + rocket.height / 2;
-    const obstacleCenterX = obstacle.x + obstacle.size / 2;
-    const obstacleCenterY = obstacle.y + obstacle.size / 2;
+    const obj1CenterX = obj1.x + obj1.width / 2;
+    const obj1CenterY = obj1.y + obj1.height / 2;
+    const obj2CenterX = obj2.x + obj2.size / 2;
+    const obj2CenterY = obj2.y + obj2.size / 2;
 
     // Calculer la distance entre les centres
-    const deltaX = rocketCenterX - obstacleCenterX;
-    const deltaY = rocketCenterY - obstacleCenterY;
+    const deltaX = obj1CenterX - obj2CenterX;
+    const deltaY = obj1CenterY - obj2CenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // Définir le seuil de collision avec tolérance
-    const collisionThreshold = (rocket.width / 2) + (obstacle.size / 2) + 30; // Augmenté de 20 à 30 pixels de tolérance
+    const collisionThreshold = (obj1.width / 2) + (obj2.size / 2) + 30; // 30 pixels de tolérance
 
     // Vérifier si la distance est inférieure au seuil
     return distance < collisionThreshold;
@@ -287,6 +294,40 @@ function drawLives() {
     const padding = 10;    // Espacement entre les cœurs
     for (let i = 0; i < lives; i++) {
         ctx.drawImage(heartImage, canvas.width - (heartSize + padding) * (i + 1), 20, heartSize, heartSize);
+    }
+}
+
+// Générer le cœur bonus
+function generateBonusHeart() {
+    const size = 30; // Taille du cœur bonus
+    const x = Math.random() * (canvas.width - size);
+    bonusHeart = {
+        x: x,
+        y: -size,
+        size: size,
+        speed: 2 // Vitesse de descente du cœur bonus
+    };
+}
+
+// Mettre à jour le cœur bonus
+function updateBonusHeart() {
+    if (bonusHeart) {
+        bonusHeart.y += bonusHeart.speed;
+        if (bonusHeart.y > canvas.height) {
+            bonusHeart = null; // Supprimer le cœur bonus lorsqu'il sort de l'écran
+        }
+        // Détection de collision avec la fusée
+        if (detectCollision(rocket, bonusHeart)) {
+            lives = Math.min(lives + 1, 3); // Augmenter les vies jusqu'à un maximum de 3
+            bonusHeart = null; // Retirer le cœur bonus après collecte
+        }
+    }
+}
+
+// Dessiner le cœur bonus
+function drawBonusHeart() {
+    if (bonusHeart) {
+        ctx.drawImage(heartImage, bonusHeart.x, bonusHeart.y, bonusHeart.size, bonusHeart.size);
     }
 }
 
@@ -323,6 +364,9 @@ function displayScore() {
         canvas.style.display = "none";
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0; // Remettre la musique à zéro
+
+        // Arrêter l'intervalle du cœur bonus
+        clearInterval(bonusHeartInterval);
     }, 2000); // Affiche le score pendant 2 secondes
 }
 
@@ -434,11 +478,13 @@ function gameLoop() {
     updatePlanet();       // Mettre à jour la planète
     updateMoon();         // Mettre à jour la lune
     updateObstacles();    // Mettre à jour les obstacles
+    updateBonusHeart();   // Mettre à jour le cœur bonus
 
     drawStars();          // Dessiner les étoiles
     drawPlanet();         // Dessiner la planète
     drawMoon();           // Dessiner la lune
     drawObstacles();      // Dessiner les obstacles
+    drawBonusHeart();     // Dessiner le cœur bonus
     drawRocket();         // Dessiner la fusée
     drawTimer();          // Dessiner le compteur de temps
     drawLives();          // Dessiner les vies
@@ -475,6 +521,7 @@ function startGame() {
     showScore = false;
     score = 0;
     lives = 3; // Réinitialiser les vies
+    bonusHeart = null; // Réinitialiser le cœur bonus
 
     // Générer à nouveau les étoiles
     generateStars();
@@ -490,8 +537,8 @@ function startGame() {
     // Recommencer la boucle de jeu
     gameLoop();
 
-    // Augmenter la difficulté toutes les 5 secondes (divisé par deux)
-    difficultyInterval = setInterval(increaseDifficulty, 5000); // Anciennement 10000ms
+    // Augmenter la difficulté toutes les 20 secondes
+    difficultyInterval = setInterval(increaseDifficulty, 20000); // Anciennement 5000ms
 
     // Générer des obstacles à intervalles réguliers
     obstacleInterval = setInterval(generateObstacle, 800);
@@ -501,6 +548,10 @@ function startGame() {
     timerInterval = setInterval(() => {
         elapsedTime += 1;
     }, 100); // Incrémente toutes les 100ms (dixièmes de seconde)
+
+    // Générer un cœur bonus toutes les 40 secondes
+    clearInterval(bonusHeartInterval);
+    bonusHeartInterval = setInterval(generateBonusHeart, 40000);
 }
 
 // Mettre à jour les obstacles et gérer les collisions
@@ -527,6 +578,7 @@ function updateObstacles() {
                 clearInterval(obstacleInterval);
                 clearInterval(difficultyInterval);
                 clearInterval(timerInterval);
+                clearInterval(bonusHeartInterval);
                 showScore = true;
                 score = elapsedTime / 10; // Convertir en secondes avec une décimale
                 setTimeout(() => {
@@ -538,21 +590,6 @@ function updateObstacles() {
             break; // Sortir de la boucle après gestion de la collision
         }
     }
-}
-
-// Fonction pour afficher le score et retourner au bouton "Start Game"
-function displayScore() {
-    // Dessiner le score une fois
-    drawScore();
-
-    // Après un délai, réinitialiser le jeu et afficher le bouton "Start Game"
-    setTimeout(() => {
-        showScore = false;
-        document.getElementById("startButton").style.display = "block";
-        canvas.style.display = "none";
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0; // Remettre la musique à zéro
-    }, 2000); // Affiche le score pendant 2 secondes
 }
 
 // Fonction pour réinitialiser le jeu (si nécessaire)
