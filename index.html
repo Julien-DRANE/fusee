@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Colorful Rocket Game</title>
-    <!-- Balise meta viewport pour une meilleure compatibilité mobile -->
+    <!-- Balise meta viewport sans blocage du zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Styles globaux */
@@ -12,7 +12,7 @@
             padding: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            height: 100%; /* Pour que le fond couvre toute la hauteur */
+            height: 100%;
         }
         /* Fond de la page avant le jeu */
         #menuBackground {
@@ -23,15 +23,15 @@
             height: 100%;
             background: url('menu.png') no-repeat center center;
             background-size: cover;
-            z-index: -1; /* Pour que le fond soit derrière les boutons */
+            z-index: -1;
         }
         /* Style du canvas */
         canvas {
-            display: none; /* Cacher le canvas jusqu'au démarrage */
+            display: none;
             background: #000;
-            width: 100vw; /* Prendre toute la largeur de la fenêtre */
-            height: 100vh; /* Prendre toute la hauteur de la fenêtre */
-            position: absolute; /* Superposer le canvas correctement */
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
             top: 0;
             left: 0;
         }
@@ -48,9 +48,9 @@
             border: none;
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            z-index: 1; /* S'assurer que le bouton est au-dessus du fond */
+            z-index: 1;
             color: #fff;
-            background-color: #ff5722; /* Couleur de la bulle */
+            background-color: #ff5722;
         }
         #startButton:hover {
             background-color: #e64a19;
@@ -97,19 +97,19 @@
         #highScoreTable {
             display: none;
             position: absolute;
-            top: 10%; /* Position ajustée */
-            right: 10%; /* Position ajustée */
+            top: 5%;
+            right: 5%;
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 45px;
+            border-radius: 30px;
             color: #000;
-            max-width: 200px;
+            max-width: 600px;
             z-index: 1;
         }
         #highScoreTable h2 {
             margin-top: 0;
             text-align: center;
-            font-size: 24px; /* Taille de police normale */
+            font-size: 72px;
         }
         #highScoresList {
             list-style: none;
@@ -117,8 +117,8 @@
             margin: 0;
         }
         #highScoresList li {
-            margin: 5px 0;
-            font-size: 18px;
+            margin: 15px 0;
+            font-size: 54px;
         }
     </style>
 </head>
