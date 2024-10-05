@@ -21,6 +21,7 @@ let rocket = {
 let obstacles = [];
 let stars = [];
 let planet = null;  // Variable pour la planète
+let moon = null;    // Variable pour la lune
 const numberOfStars = 100;
 const backgroundMusic = document.getElementById("backgroundMusic");
 let difficultyLevel = 1;  // Niveau de difficulté initial
@@ -41,9 +42,13 @@ const obstacleImages = ["unicorn.png", "koala.png", "crocodile.png"].map(src => 
 const planetImage = new Image();
 planetImage.src = "planet.png";
 
+// Charger l'image de la lune
+const moonImage = new Image();
+moonImage.src = "lune.png";
+
 // Gérer le chargement des images
 let imagesLoaded = 0;
-const totalImages = obstacleImages.length + 2; // Inclure l'image de la fusée et la planète
+const totalImages = obstacleImages.length + 3; // Inclure l'image de la fusée, la planète et la lune
 
 // Vérifier le chargement des images et démarrer le jeu
 function imageLoaded() {
@@ -56,7 +61,8 @@ function imageLoaded() {
 // Ajouter des gestionnaires d'événements de chargement et d'erreur pour chaque image
 rocketImage.onload = imageLoaded;
 planetImage.onload = imageLoaded;
-rocketImage.onerror = planetImage.onerror = function () {
+moonImage.onload = imageLoaded;
+rocketImage.onerror = planetImage.onerror = moonImage.onerror = function () {
     console.error("Erreur de chargement de l'image.");
     alert("Erreur de chargement de l'image.");
 };
@@ -82,13 +88,25 @@ function generateStars() {
 
 // Générer la planète (décor)
 function generatePlanet() {
-    const x = Math.random() * (canvas.width - 100);  // Position horizontale aléatoire
+    const x = Math.random() * (canvas.width - 400);  // Position horizontale aléatoire
     planet = {
         x: x,
-        y: -200,  // Position de départ hors de l'écran
-        width: 400,
-        height: 400,
+        y: -800,  // Position de départ hors de l'écran
+        width: 400,  // Largeur de la planète multipliée par 4
+        height: 400,  // Hauteur de la planète multipliée par 4
         speed: 0.5 // Vitesse lente pour traverser l'écran
+    };
+}
+
+// Générer la lune (décor)
+function generateMoon() {
+    const x = Math.random() * (canvas.width - 800);  // Position horizontale aléatoire
+    moon = {
+        x: x,
+        y: -1600,  // Position de départ hors de l'écran
+        width: 800,  // Largeur de la lune (super grosse)
+        height: 800,  // Hauteur de la lune (super grosse)
+        speed: 0.2 // Vitesse très lente pour traverser l'écran
     };
 }
 
@@ -118,6 +136,21 @@ function updatePlanet() {
     }
 }
 
+// Mettre à jour la position de la lune
+function updateMoon() {
+    if (moon) {
+        moon.y += moon.speed;  // Faire descendre la lune
+        if (moon.y > canvas.height) {
+            moon = null;  // Supprimer la lune lorsqu'elle sort de l'écran
+        }
+    } else {
+        // Générer la lune avec une probabilité de 1 sur 1000 à chaque frame
+        if (Math.random() < 0.001) {
+            generateMoon();
+        }
+    }
+}
+
 // Dessiner les étoiles avec des vitesses et tailles différentes
 function drawStars() {
     stars.forEach(star => {
@@ -133,6 +166,13 @@ function drawStars() {
 function drawPlanet() {
     if (planet) {
         ctx.drawImage(planetImage, planet.x, planet.y, planet.width, planet.height);
+    }
+}
+
+// Dessiner la lune
+function drawMoon() {
+    if (moon) {
+        ctx.drawImage(moonImage, moon.x, moon.y, moon.width, moon.height);
     }
 }
 
@@ -212,6 +252,8 @@ function update() {
     updateStars();    // Mettre à jour la position des étoiles
     updatePlanet();   // Mettre à jour la position de la planète
     drawPlanet();     // Dessiner la planète décorative
+    updateMoon();     // Mettre à jour la position de la lune
+    drawMoon();       // Dessiner la lune décorative
     updateObstacles();
     drawRocket();
     drawObstacles();
