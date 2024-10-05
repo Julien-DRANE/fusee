@@ -99,6 +99,56 @@ function imageLoaded() {
         document.getElementById("startButton").style.display = "block";
     }
 }
+// ... Votre code existant ...
+
+// Sélectionne le canvas et initialise le contexte
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Détecter si l'appareil est mobile
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+// Définir le facteur d'échelle
+const scaleFactor = isMobile ? 1 / 2.3 : 1; // Dézoome de 2,3 fois sur mobile
+
+// Dimensions du canvas
+canvas.width = window.innerWidth / scaleFactor;
+canvas.height = window.innerHeight / scaleFactor;
+
+// ... Le reste de votre code ...
+
+function startGame() {
+    // ... Votre code existant ...
+
+    // Réinitialiser les transformations du contexte
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // Appliquer le facteur d'échelle
+    ctx.scale(scaleFactor, scaleFactor);
+
+    // ... Le reste de votre code ...
+}
+
+// Gestion des événements tactiles
+canvas.addEventListener("touchstart", handleTouchStart, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+canvas.addEventListener("touchend", handleTouchEnd, false);
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchActive = true;
+    touchX = touch.clientX / scaleFactor;
+    touchY = touch.clientY / scaleFactor;
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    const touch = e.touches[0];
+    touchX = touch.clientX / scaleFactor;
+    touchY = touch.clientY / scaleFactor;
+    e.preventDefault();
+}
+
+// ... Le reste de votre code ...
 
 // Ajouter des gestionnaires d'événements de chargement et d'erreur pour chaque image
 rocketImage.onload = imageLoaded;
