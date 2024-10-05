@@ -121,9 +121,9 @@ function generateMoon() {
     moon = {
         x: x,
         y: -1600,         // Position de départ hors de l'écran
-        width: 800,       // Largeur de la lune (super grosse)
-        height: 800,      // Hauteur de la lune (super grosse)
-        speed: 0.2        // Vitesse très lente pour traverser l'écran
+        width: 500,       // Largeur de la lune (super grosse)
+        height: 500,      // Hauteur de la lune (super grosse)
+        speed: 0.4        // Vitesse très lente pour traverser l'écran
     };
 }
 
