@@ -3,7 +3,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 // Facteur de réduction
-const scaleFactor = 4 / 6; // Réduction de la taille par un facteur de 2,3
+const scaleFactor = 4 / 6; // Réduction de la taille par un facteur de 4/6 (≈0,6667)
 
 // Dimensions du canvas (inchangées)
 canvas.width = window.innerWidth;
@@ -29,6 +29,7 @@ let planet = null;
 let moon = null;
 const numberOfStars = 100;
 const backgroundMusic = document.getElementById("backgroundMusic");
+backgroundMusic.volume = 1.0; // S'assurer que le volume est à 100%
 let difficultyLevel = 1;
 let obstacleSpeedMultiplier = 1;
 
@@ -592,6 +593,7 @@ function startGame() {
     canvas.style.display = "block";
     document.getElementById("startButton").style.display = "none";
 
+    // Démarrer la musique de fond
     backgroundMusic.currentTime = 0;
     backgroundMusic.play().catch(function(error) {
         console.log('Échec de la lecture de la musique de fond :', error);
@@ -618,8 +620,21 @@ loadHighScores();
 // Écouteur d'événement pour le bouton de démarrage
 const startButton = document.getElementById("startButton");
 
-startButton.addEventListener("click", startGame);
+startButton.addEventListener("click", function() {
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(function(error) {
+        console.log('Échec de la lecture de la musique de fond :', error);
+    });
+    startGame();
+});
+
 startButton.addEventListener("touchstart", function(e) {
     e.preventDefault();
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(function(error) {
+        console.log('Échec de la lecture de la musique de fond :', error);
+    });
     startGame();
 }, { passive: false });
