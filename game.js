@@ -28,30 +28,25 @@ let stars = [];
 let planet = null;
 let moon = null;
 const numberOfStars = 100;
-
-// Charger l'AudioContext pour les appareils Chrome
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const backgroundMusic = document.getElementById("backgroundMusic");
-const source = audioContext.createMediaElementSource(backgroundMusic);
-source.connect(audioContext.destination);
-
-// Ajuster le volume de la musique à 70 % (réduction de 30 %)
-backgroundMusic.volume = 0.7;
-
-// Variables pour la difficulté et le score
+backgroundMusic.volume = 1.0; // S'assurer que le volume est à 100%
 let difficultyLevel = 1;
 let obstacleSpeedMultiplier = 1;
+
 let elapsedTime = 0; // En dixièmes de seconde
 let timerInterval;
 
 let showScore = false;
 let score = 0;
-let lives = 3; // Nombre initial de vies
 
 let touchActive = false;
 let touchX = 0;
 let touchY = 0;
 const followSpeed = 10 * scaleFactor; // Vitesse de suivi ajustée
+
+// Charger l'image de la fusée
+const rocketImage = new Image();
+rocketImage.src = "rocket.png";
 
 // Charger les images des obstacles
 const obstacleImages = ["unicorn.png", "koala.png", "crocodile.png"].map(src => {
@@ -60,9 +55,11 @@ const obstacleImages = ["unicorn.png", "koala.png", "crocodile.png"].map(src => 
     return img;
 });
 
-// Charger l'image de la planète et de la lune
+// Charger l'image de la planète
 const planetImage = new Image();
 planetImage.src = "planet.png";
+
+// Charger l'image de la lune
 const moonImage = new Image();
 moonImage.src = "lune.png";
 
@@ -70,19 +67,27 @@ moonImage.src = "lune.png";
 const heartImage = new Image();
 heartImage.src = "coeur.png";
 
-// Charger les sons de collision et de bonus
+// Charger le son de collision
 const collisionSound = new Audio('collision.mp3');
+
+// Charger le son de vie supplémentaire
 const extraLifeSound = new Audio('extra.mp3');
 
-// Variables pour le cœur bonus et le tableau des scores
+// Gérer le chargement des images
+let imagesLoaded = 0;
+const totalImages = obstacleImages.length + 4; // Inclure l'image de la fusée, la planète, la lune et les cœurs
+
+// Variables de vies
+let lives = 3; // Nombre initial de vies
+
+// Variables pour le cœur bonus
 let bonusHeart = null;
 let bonusHeartInterval;
+
+// Variables pour les meilleurs scores
 let highScores = [];
 
 // Vérifier le chargement des images et démarrer le jeu
-let imagesLoaded = 0;
-const totalImages = obstacleImages.length + 3; // Inclure la planète, la lune et les cœurs
-
 function imageLoaded() {
     imagesLoaded++;
     if (imagesLoaded === totalImages) {
@@ -90,106 +95,35 @@ function imageLoaded() {
     }
 }
 
-// Associer des événements de chargement et d'erreur aux images
+// Ajouter des gestionnaires d'événements de chargement et d'erreur pour chaque image
+rocketImage.onload = imageLoaded;
 planetImage.onload = imageLoaded;
 moonImage.onload = imageLoaded;
 heartImage.onload = imageLoaded;
+rocketImage.onerror = planetImage.onerror = moonImage.onerror = heartImage.onerror = function () {
+    console.error("Erreur de chargement de l'image.");
+    alert("Erreur de chargement de l'image.");
+};
 
 obstacleImages.forEach(img => {
     img.onload = imageLoaded;
-    img.onerror = () => alert(`Erreur de chargement de l'image : ${img.src}`);
+    img.onerror = function () {
+        console.error(`Erreur de chargement de l'image : ${img.src}`);
+        alert(`Erreur de chargement de l'image : ${img.src}`);
+    };
 });
 
-// Vérifier le chargement de la musique
-backgroundMusic.addEventListener('error', (e) => {
-    console.error('Erreur lors de la lecture de la musique :', e);
-});
-
-// Générer des étoiles
+// Générer des étoiles aléatoires
 function generateStars() {
     stars = [];
     for (let i = 0; i < numberOfStars; i++) {
         const size = (Math.random() * 3 + 1) * scaleFactor;
         const speed = size / 2;
-        stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size, speed });
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        stars.push({ x, y, size, speed });
     }
 }
-
-// Démarrer l'AudioContext pour activer le son
-function activateAudioContext() {
-    if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => console.log('AudioContext activé'));
-    }
-}
-
-// Démarrer la musique de fond
-function startBackgroundMusic() {
-    activateAudioContext();
-    backgroundMusic.currentTime = 0;
-    backgroundMusic.play().then(() => {
-        console.log('Musique de fond lue avec succès');
-    }).catch(error => {
-        console.error('Erreur de lecture de la musique de fond :', error);
-        // Sur mobile, les navigateurs peuvent bloquer la lecture automatique. Vous pouvez informer l'utilisateur ici.
-    });
-}
-
-// Lancer le jeu avec la musique de fond
-function startGame() {
-    loadHighScores();
-    resetGameVariables();
-    generateStars();
-    hideUIElements();
-
-    startBackgroundMusic();
-
-    gameLoop();
-    difficultyInterval = setInterval(increaseDifficulty, 20000);
-    startObstacleGeneration();
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        elapsedTime += 1;
-    }, 100);
-
-    clearInterval(bonusHeartInterval);
-    bonusHeartInterval = setInterval(generateBonusHeart, 40000);
-}
-
-// Réinitialiser les variables du jeu pour une nouvelle partie
-function resetGameVariables() {
-    rocket = { ...initialRocket };
-    obstacles = [];
-    planet = null;
-    moon = null;
-    difficultyLevel = 1;
-    obstacleSpeedMultiplier = 1;
-    elapsedTime = 0;
-    showScore = false;
-    score = 0;
-    lives = 3;
-    bonusHeart = null;
-}
-
-// Cacher les éléments de l'interface utilisateur avant le démarrage du jeu
-function hideUIElements() {
-    document.getElementById("gameOverScreen").style.display = "none";
-    document.getElementById("highScoreTable").style.display = "none";
-    canvas.style.display = "block";
-    document.getElementById("startButton").style.display = "none";
-}
-
-// Ajouter les événements pour le bouton de démarrage
-const startButton = document.getElementById("startButton");
-
-startButton.addEventListener("click", function() {
-    startGame();
-});
-
-startButton.addEventListener("touchstart", function(e) {
-    e.preventDefault();
-    startGame();
-}, { passive: false });
 
 // Générer la planète (décor)
 function generatePlanet() {
@@ -495,6 +429,7 @@ function updateRocketPosition() {
 
 // Fonction principale de la boucle de jeu
 let animationFrameId;
+let difficultyInterval;
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -659,7 +594,10 @@ function startGame() {
     document.getElementById("startButton").style.display = "none";
 
     // Démarrer la musique de fond
-    startBackgroundMusic();
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(function(error) {
+        console.log('Échec de la lecture de la musique de fond :', error);
+    });
 
     gameLoop();
 
@@ -678,3 +616,25 @@ function startGame() {
 
 // Appeler loadHighScores lorsque le script se charge
 loadHighScores();
+
+// Écouteur d'événement pour le bouton de démarrage
+const startButton = document.getElementById("startButton");
+
+startButton.addEventListener("click", function() {
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(function(error) {
+        console.log('Échec de la lecture de la musique de fond :', error);
+    });
+    startGame();
+});
+
+startButton.addEventListener("touchstart", function(e) {
+    e.preventDefault();
+    // Démarrer la musique de fond
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(function(error) {
+        console.log('Échec de la lecture de la musique de fond :', error);
+    });
+    startGame();
+}, { passive: false });
