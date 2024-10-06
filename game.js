@@ -130,7 +130,7 @@ function startBackgroundMusic() {
         console.log('Musique de fond lue avec succès');
     }).catch(error => {
         console.error('Erreur de lecture de la musique de fond :', error);
-        alert("Appuyez à nouveau sur 'Jouer' pour activer la musique.");
+        // Sur mobile, les navigateurs peuvent bloquer la lecture automatique. Vous pouvez informer l'utilisateur ici.
     });
 }
 
