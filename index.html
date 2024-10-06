@@ -124,13 +124,11 @@
     <!-- Fond de la page avant le jeu -->
     <div id="menuBackground"></div>
 
-    <!-- Élément audio avec lecture automatique -->
-    <audio id="backgroundMusic" loop autoplay>
+    <audio id="backgroundMusic" loop>
         <source src="soft-music.mp3" type="audio/mpeg">
-        <!-- Suppression du format OGG comme demandé -->
+        <source src="soft-music.ogg" type="audio/ogg">
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
-    
     <button id="startButton">Jouer</button>
     <canvas id="gameCanvas"></canvas>
 
