@@ -29,7 +29,7 @@ let planet = null;
 let moon = null;
 const numberOfStars = 100;
 const backgroundMusic = document.getElementById("backgroundMusic");
-backgroundMusic.volume = 1.0; // S'assurer que le volume est à 100%
+backgroundMusic.volume = 0.7; // S'assurer que le volume est à 100%
 let difficultyLevel = 1;
 let obstacleSpeedMultiplier = 1;
 
