@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Colorful Rocket Game</title>
+    <!-- Balise meta viewport standard -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Styles globaux */
         body, html {
@@ -122,16 +124,14 @@
     <!-- Fond de la page avant le jeu -->
     <div id="menuBackground"></div>
 
-    <!-- Élément audio pour la musique de fond -->
-    <audio id="backgroundMusic" loop>
+    <!-- Élément audio avec lecture automatique -->
+    <audio id="backgroundMusic" loop autoplay>
         <source src="soft-music.mp3" type="audio/mpeg">
+        <!-- Suppression du format OGG comme demandé -->
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
-
-    <!-- Bouton de démarrage -->
+    
     <button id="startButton">Jouer</button>
-
-    <!-- Canvas du jeu -->
     <canvas id="gameCanvas"></canvas>
 
     <!-- Écran de fin de jeu pour entrer le nom du joueur et afficher le score -->
@@ -148,7 +148,6 @@
         <ol id="highScoresList"></ol>
     </div>
 
-    <!-- Script du jeu -->
     <script src="game.js"></script>
 </body>
 </html>
